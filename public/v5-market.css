@@ -1,0 +1,31 @@
+/* EquityClimb v5: dependable iPhone layout + Market Intelligence */
+:root{--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
+html,body{width:100%;max-width:100%;overflow-x:hidden}
+body::before{content:"";position:fixed;z-index:50;top:0;left:0;right:0;height:var(--safe-top);background:rgba(10,14,20,.96);pointer-events:none}
+main{padding-top:calc(36px + var(--safe-top))}
+.v5-hero{padding:24px;background:linear-gradient(135deg,rgba(201,171,108,.14),rgba(54,74,101,.13) 50%,transparent),var(--surface);overflow:hidden}
+.v5-kicker{color:var(--accent);font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase}
+.v5-hero h2{font:500 clamp(21px,2.4vw,29px)/1.28 var(--serif);margin:10px 0 16px;max-width:780px}
+.v5-signals{display:flex;gap:8px;flex-wrap:wrap}.v5-signal{border:1px solid var(--line);background:rgba(255,255,255,.025);border-radius:9px;padding:7px 10px;color:var(--ink2);font-size:12px}
+.v5-controls{margin:16px 0 14px;display:grid;gap:10px}
+.v5-geo{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none}.v5-geo::-webkit-scrollbar{display:none}
+.v5-geo button,.v5-categories button{border:1px solid transparent;background:transparent;color:var(--mute);border-radius:9px;font:600 12px var(--sans);padding:9px 12px;white-space:nowrap;cursor:pointer}
+.v5-geo button.on,.v5-categories button.on{color:var(--ink);background:var(--surface2);border-color:var(--line)}
+.v5-categories{display:flex;gap:5px;overflow-x:auto;scrollbar-width:none}.v5-categories::-webkit-scrollbar{display:none}.v5-categories button.on{color:var(--accent)}
+.v5-category-select{display:none;width:100%;font-size:16px;min-height:45px;background:var(--surface);border:1px solid var(--line2);color:var(--ink);border-radius:11px;padding:0 12px}
+.v5-refresh-line{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:45px}.v5-status{font-size:12px;color:var(--mute);line-height:1.35}.v5-status.ok{color:var(--pos)}.v5-status.fail{color:var(--warn)}
+.v5-refresh.loading svg{animation:v5spin .8s linear infinite}.v5-refresh.success{color:var(--pos);border-color:rgba(103,196,154,.5);animation:v5pulse .7s ease}@keyframes v5spin{to{transform:rotate(360deg)}}@keyframes v5pulse{50%{box-shadow:0 0 0 7px rgba(103,196,154,.1)}}
+.v5-layout{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(290px,.85fr);gap:16px}.v5-story{padding:16px 0;border-bottom:1px solid var(--line)}.v5-story:first-child{padding-top:2px}.v5-story:last-child{border:0}.v5-meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:6px;font-size:11.5px;color:var(--mute)}.v5-badge{color:var(--accent);font-size:10px;font-weight:750;letter-spacing:.08em;text-transform:uppercase}.v5-title{display:block;color:var(--ink);font-size:15px;font-weight:620;line-height:1.42;overflow-wrap:anywhere}.v5-title:hover{color:var(--accent);text-decoration:none}.v5-why{margin-top:7px;color:var(--ink2);font-size:12.5px;line-height:1.5}.v5-why b{color:var(--mute)}.v5-empty{padding:25px 4px;color:var(--mute);text-align:center}.v5-side-card+.v5-side-card{margin-top:16px}
+@media(max-width:920px){
+ main{padding:calc(18px + var(--safe-top)) 14px calc(104px + var(--safe-bottom));width:100%;max-width:100%}.v5-layout{grid-template-columns:1fr}input,select,textarea{font-size:16px!important}.tabbar{padding-bottom:calc(8px + var(--safe-bottom))}
+}
+@media(max-width:700px){
+ .v5-hero{padding:18px 16px}.v5-hero h2{font-size:clamp(22px,7vw,29px)}
+ .v5-geo{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;overflow:visible}.v5-geo button{min-width:0;padding:10px 3px;font-size:11.5px;text-align:center}
+ /* Phone uses one select, never overlapping horizontal labels. */
+ .v5-categories{display:none!important}.v5-category-select{display:block!important}
+ .v5-refresh-line{align-items:center}.v5-status{flex:1;min-width:0}.v5-refresh{flex:0 0 auto}
+ .v5-story{padding:14px 0}.v5-title{font-size:14px}.v5-why{font-size:12px}
+ .grid.g4{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.grid.g3,.grid.g2,.grid.g21{grid-template-columns:1fr}.card{min-width:0}
+}
+@media(max-width:350px){.grid.g4{grid-template-columns:1fr}.v5-geo button{font-size:10.5px}}
