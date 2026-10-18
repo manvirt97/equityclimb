@@ -1,12 +1,162 @@
-/* EquityClimb v6 - Phase 1: unified data model, tested engine, 5-group budget, new dashboard and navigation.
-   Loads AFTER app.js and BEFORE v5-market.js. Keeps Market, Neighbourhoods, Buying, Goals, Advisor and Settings. */
+/* EquityClimb v6 - ONE file: calculation engine + Phase 1 screens + styles.
+   index.html only needs this file loaded after app.js (in place of upgrade.js). */
+
+/* ================= PART 1: STYLES (injected automatically) ================= */
+(function () {
+  if (document.querySelector('style[data-ec6]')) return;
+  var css = `
+.navsep{height:1px;background:var(--line);margin:12px 10px}
+.side .nav{padding:9px 12px}
+.ask-ai{display:inline-flex;align-items:center;gap:4px;margin-left:8px;border:1px solid var(--line2);background:transparent;color:var(--accent);border-radius:99px;padding:2px 8px 2px 6px;font-size:11px;font-weight:600;cursor:pointer;vertical-align:middle}
+.ask-ai svg{width:12px;height:12px;stroke:currentColor}
+.ask-ai:hover{background:var(--surface2)}
+.kpi .l{display:flex;align-items:center;justify-content:space-between}
+.grid.mini .kpi .v{font-size:20px}
+.grid.mini .card{padding:14px 16px}
+.warnnote{border-left-color:var(--warn)}
+.opp h3{line-height:1.4}
+.linked{display:inline-block;min-width:96px;text-align:right;color:var(--ink2);font-weight:600}
+.formula{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.formula>div{display:flex;flex-direction:column;min-width:92px}
+.formula span{font-size:11px;color:var(--mute);text-transform:uppercase;letter-spacing:.08em}
+.formula b{font-size:20px;font-weight:600;margin-top:2px}
+.formula i{font-style:normal;color:var(--mute);font-size:18px}
+.formula .res b{font-size:24px}
+.formula .res.pos b{color:var(--pos)}.formula .res.neg b{color:var(--neg)}
+.bgroup .gt{font-size:20px;font-weight:600;color:var(--accent)}
+.bgroup td{padding:9px 4px}
+.payconv{margin-top:12px}
+.moreic svg{width:20px;height:20px;stroke:var(--accent)}
+.table-scroll{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+@media(max-width:700px){.v5-geo{grid-template-columns:repeat(5,minmax(0,1fr))!important}.v5-geo button{font-size:11px}}
+@media(max-width:700px){
+  .formula{gap:8px}.formula>div{min-width:calc(50% - 20px)}.formula i{display:none}
+  .formula .res{min-width:100%;border-top:1px solid var(--line);padding-top:8px}
+  .tabbar .nav span{font-size:9.5px}
+  .bgroup td input{width:104px}
+  .ask-ai span{display:none}.ask-ai{padding:3px 5px}
+}`;
+  var s = document.createElement('style'); s.setAttribute('data-ec6', ''); s.textContent = css; document.head.appendChild(s);
+})();
+
+/* ================= PART 2: CALCULATION ENGINE ================= */
+(function (root) {
+  'use strict';
+  const ASSUMPTIONS = {
+    version: '2026.1', effective: '2026-01-01',
+    note: 'Defaults only. Confirm contribution room with CRA My Account and mortgage terms with your lender.',
+    stressFloor: 5.25, stressBuffer: 2, gdsMax: 39, tdsMax: 44, nonRegTaxDrag: 0.6, emergencyMonths: 3
+  };
+  const num = v => (Number.isFinite(+v) ? +v : 0);
+  function periodicRate(annualPct, compounding = 'Semi-annual', periodsPerYear = 12) {
+    const r = num(annualPct) / 100; if (!r) return 0;
+    const m = compounding === 'Monthly' ? 12 : compounding === 'Annual' ? 1 : 2;
+    return Math.pow(1 + r / m, m / periodsPerYear) - 1;
+  }
+  function payment(principal, annualPct, years, compounding = 'Semi-annual', periodsPerYear = 12) {
+    const P = num(principal), i = periodicRate(annualPct, compounding, periodsPerYear), n = Math.round(num(years) * periodsPerYear);
+    if (P <= 0) return 0; if (n <= 0) return P;
+    return i ? P * i / (1 - Math.pow(1 + i, -n)) : P / n;
+  }
+  function monthsToRepay(balance, annualPct, pmt, compounding = 'Semi-annual') {
+    const b = num(balance), i = periodicRate(annualPct, compounding), p = num(pmt);
+    if (b <= 0) return 0; if (p <= 0) return Infinity; if (!i) return Math.ceil(b / p); if (p <= b * i) return Infinity;
+    return Math.ceil(-Math.log(1 - b * i / p) / Math.log(1 + i));
+  }
+  function mortgageStepper(o) {
+    let b = num(o.balance), i = periodicRate(o.rate, o.compounding), pay = num(o.payment), m = 0;
+    const renewalMonth = o.renewalMonth == null ? null : Math.max(0, Math.round(o.renewalMonth));
+    return {
+      get balance() { return b; }, get payment() { return pay; }, get month() { return m; },
+      step(extra = 0) {
+        if (renewalMonth != null && m === renewalMonth && o.renewalRate != null && b > 0) {
+          i = periodicRate(o.renewalRate, o.compounding);
+          if (o.amortMonths) { const left = Math.max(o.amortMonths - m, 1); const need = i ? b * i / (1 - Math.pow(1 + i, -left)) : b / left; pay = Math.max(pay, need); }
+        }
+        let interest = 0, freed = 0, principal = 0;
+        if (b > 0) { interest = b * i; const nb = b + interest - (pay + num(extra)); if (nb < 0) { freed = -nb; principal = b; b = 0; } else { principal = b - nb; b = nb; } }
+        else freed = pay + num(extra);
+        m++; return { interest, principal, freed };
+      }
+    };
+  }
+  function amortize(o) {
+    const st = mortgageStepper(o), max = o.maxMonths || 600, lumpMonth = o.lumpMonth ?? 0;
+    const lump = Math.min(num(o.lump), o.lumpCap == null ? Infinity : num(o.lumpCap));
+    let interest = 0, firstPrincipal = null; const path = [st.balance];
+    while (st.balance > 0.005 && st.month < max) {
+      const r = st.step(num(o.extra) + (lump && st.month % 12 === lumpMonth ? lump : 0));
+      interest += r.interest; if (firstPrincipal == null) firstPrincipal = r.principal;
+      if (st.month % 12 === 0) path.push(st.balance);
+      if (st.month === 1 && r.principal <= 0) break;
+    }
+    const done = st.balance <= 0.005; if (done && path[path.length - 1] !== 0) path.push(0);
+    return { months: done ? st.month : Infinity, interest, path, finalPayment: st.payment, negativeAmortization: !done && (firstPrincipal || 0) <= 0 };
+  }
+  function debtPlan(debts, extra = 0, method = 'avalanche') {
+    const ds = (debts || []).filter(d => num(d.bal) > 0).map(d => ({ name: d.name || 'Debt', b: num(d.bal), r: num(d.rate) / 1200, min: num(d.min), paid: null, int: 0 }));
+    const order = [...ds].sort(method === 'snowball' ? (a, b) => a.b - b.b || b.r - a.r : (a, b) => b.r - a.r || a.b - b.b);
+    const budget = ds.reduce((s, d) => s + d.min, 0) + Math.max(num(extra), 0);
+    const warnings = ds.filter(d => d.min <= d.b * d.r).map(d => `${d.name}: minimum payment does not cover interest`);
+    let m = 0, total = 0; const path = [ds.reduce((s, d) => s + d.b, 0)];
+    while (ds.some(d => d.b > 0.005) && m < 600) {
+      ds.forEach(d => { if (d.b > 0) { const ii = d.b * d.r; d.b += ii; d.int += ii; total += ii; } });
+      let avail = budget;
+      ds.forEach(d => { if (d.b > 0) { const p = Math.min(d.min, d.b, avail); d.b -= p; avail -= p; } });
+      for (const d of order) { if (avail <= 0.005) break; if (d.b > 0) { const p = Math.min(avail, d.b); d.b -= p; avail -= p; } }
+      m++; ds.forEach(d => { if (d.b <= 0.005 && d.paid == null) { d.b = 0; d.paid = m; } });
+      if (m % 12 === 0) path.push(ds.reduce((s, d) => s + d.b, 0));
+    }
+    const ok = !ds.some(d => d.b > 0.005); if (ok && path[path.length - 1] !== 0) path.push(0);
+    return { months: ok ? m : Infinity, interest: total, path, warnings, order: order.map(d => d.name) };
+  }
+  function grow(initial, monthly, annualPct, months, fee = 0) {
+    const g = Math.pow(1 + (num(annualPct) - num(fee)) / 100, 1 / 12) - 1;
+    let v = num(initial); const path = [v];
+    for (let m = 1; m <= months; m++) { v = (v + num(monthly)) * (1 + g); if (m % 12 === 0) path.push(v); }
+    return { value: v, path, contributed: num(initial) + num(monthly) * months };
+  }
+  function compareStrategies(p) {
+    const N = Math.round(num(p.years) * 12), X = num(p.extra);
+    const g = Math.pow(1 + num(p.ret) / 100, 1 / 12) - 1;
+    const gN = Math.pow(1 + Math.max(num(p.ret) - ASSUMPTIONS.nonRegTaxDrag, 0) / 100, 1 / 12) - 1;
+    const cap = (num(p.origP) || num(p.balance)) * num(p.prepayPct ?? 15) / 100, out = {};
+    { const M = mortgageStepper(p); let nr = 0, used = 0, capped = false;
+      for (let m = 0; m < N; m++) { if (m % 12 === 0) used = 0; const a = M.balance > 0 ? Math.max(0, Math.min(X, cap - used)) : 0; if (a < X && M.balance > 0) capped = true; used += a; const r = M.step(a); nr = (nr + r.freed + X - a) * (1 + gN); }
+      out.prepay = { net: nr - M.balance, capped }; }
+    { const M = mortgageStepper(p); let room = num(p.tfsaRoom), t = 0, nr = 0;
+      for (let m = 0; m < N; m++) { if (m > 0 && m % 12 === 0) room += num(p.tfsaNew); const r = M.step(0), c = X + r.freed, a = Math.min(c, room); room -= a; t = (t + a) * (1 + g); nr = (nr + c - a) * (1 + gN); }
+      out.tfsa = { net: t + nr - M.balance }; }
+    { const M = mortgageStepper(p); let rr = num(p.rrspRoom), troom = num(p.tfsaRoom), r = 0, t = 0, nr = 0, yc = 0, pending = 0;
+      for (let m = 0; m < N; m++) {
+        if (m > 0 && m % 12 === 0) { rr += num(p.rrspNew); troom += num(p.tfsaNew); pending = yc; yc = 0; }
+        let toT = 0, toN = 0;
+        if (m % 12 === 3 && pending > 0) { const ref = pending * num(p.mtr) / 100, a = Math.min(ref, troom); troom -= a; toT += a; toN += ref - a; pending = 0; }
+        const s = M.step(0), c = Math.min(X, rr); rr -= c; yc += c;
+        const rest = X - c + s.freed, a = Math.min(rest, troom); troom -= a; toT += a; toN += rest - a;
+        r = (r + c) * (1 + g); t = (t + toT) * (1 + g); nr = (nr + toN) * (1 + gN);
+      }
+      out.rrsp = { net: r * (1 - num(p.retTax) / 100) + t + nr - M.balance }; }
+    return out;
+  }
+  function budgetTotals(b) {
+    const sum = o => Object.values(o || {}).reduce((s, v) => s + num(v), 0);
+    const income = sum(b.income), essentials = sum(b.essentials), lifestyle = sum(b.lifestyle), debt = sum(b.debt), savings = sum(b.savings);
+    return { income, essentials, lifestyle, living: essentials + lifestyle, debt, savings, unallocated: income - essentials - lifestyle - debt - savings };
+  }
+  const toMonthly = (a, f) => num(a) * ({ Weekly: 52 / 12, Biweekly: 26 / 12, 'Semi-monthly': 2, Monthly: 1, Annual: 1 / 12 }[f] || 1);
+  const minDownPayment = price => { const p = num(price); return p <= 500000 ? p * 0.05 : p < 1500000 ? 25000 + (p - 500000) * 0.10 : p * 0.20; };
+  const insurancePremium = d => d >= 0.2 ? 0 : d >= 0.15 ? 0.028 : d >= 0.10 ? 0.031 : 0.04;
+  const qualifyingRate = c => Math.max(ASSUMPTIONS.stressFloor, num(c) + ASSUMPTIONS.stressBuffer);
+  root.ECEngine = { ASSUMPTIONS, periodicRate, payment, monthsToRepay, mortgageStepper, amortize, debtPlan, grow, compareStrategies, budgetTotals, toMonthly, minDownPayment, insurancePremium, qualifyingRate };
+})(window);
+
+/* ================= PART 3: SCREENS ================= */
 (() => {
   'use strict';
   const E = window.ECEngine;
-  if (!E) { console.error('engine.js did not load'); return; }
   const n = v => (Number.isFinite(+v) ? +v : 0);
 
-  /* 1. MIGRATION (no data lost) */
   function migrate() {
     if ((S.schema || 0) >= 6) return;
     try { const raw = localStorage.getItem('ho'); if (raw && !localStorage.getItem('ho_backup_v5')) localStorage.setItem('ho_backup_v5', raw); } catch {}
@@ -35,11 +185,9 @@
     S.migrationNotes = notes; S.schema = 6; save();
   }
 
-  /* 2. SHARED MODEL (entered once, used everywhere) */
   const renewalMonth = () => { const d = new Date(S.maturity); if (isNaN(d)) return null; return Math.max(0, Math.round((d - today) / 2.63e9)); };
-  const baseMonths = () => E.monthsToRepay(S.bal, S.rate, S.pmt, S.compounding);
   const mortgageParams = (rate = S.rate) => {
-    const am = baseMonths();
+    const am = E.monthsToRepay(S.bal, S.rate, S.pmt, S.compounding);
     return { balance: n(S.bal), rate, payment: n(S.pmt), compounding: S.compounding, renewalMonth: renewalMonth(), renewalRate: n(S.renewRate) + (rate - S.rate), amortMonths: Number.isFinite(am) ? am : 300 };
   };
   const debtBal = () => (S.debts || []).reduce((s, d) => s + n(d.bal), 0);
@@ -52,15 +200,12 @@
     const invest = n(S.tfsa) + n(S.rrsp) + n(S.nonreg), home = hasMortgage() ? n(S.home) : 0, mort = hasMortgage() ? n(S.bal) : 0;
     const assets = home + n(S.cash) + invest, liab = mort + debtBal();
     const mp = hasMortgage() ? E.amortize(mortgageParams()) : { months: 0, path: [0], interest: 0 };
-    const dp = E.debtPlan(S.debts, 0);
-    const essentialNeed = t.essentials + t.debt;
+    const dp = E.debtPlan(S.debts, 0), essentialNeed = t.essentials + t.debt;
     return { ...t, rentInc, rentalCosts, invest, home, mort, assets, liab, net: assets - liab, mp, dp,
-      emergencyMonths: essentialNeed > 0 ? n(S.cash) / essentialNeed : 0, essentialNeed,
-      debtFree: Math.max(mp.months, dp.months) };
+      emergencyMonths: essentialNeed > 0 ? n(S.cash) / essentialNeed : 0, essentialNeed, debtFree: Math.max(mp.months, dp.months) };
   }
   window.ECModel = model;
 
-  /* 3. CORRECTED LEGACY FUNCTIONS (same names, engine-backed) */
   window.amort = (bal, rate, pmt, extra = 0, lump = 0) => {
     const r = E.amortize({ ...mortgageParams(rate), balance: bal, payment: pmt, extra, lump, lumpMonth: 7, lumpCap: n(S.origP) * n(S.prepayPct) / 100 });
     return { months: r.months, int: r.interest, path: r.path };
@@ -76,8 +221,7 @@
   };
   window.compare = () => {
     const c = E.compareStrategies({ ...mortgageParams(), extra: S.extra, years: S.years, ret: S.ret, mtr: S.mtr, retTax: S.retTax, tfsaRoom: S.tfsaRoom, tfsaNew: S.tfsaNew, rrspRoom: S.rrspRoom, rrspNew: S.rrspNew, origP: S.origP, prepayPct: S.prepayPct });
-    window._lastCompare = c;
-    return { prepay: c.prepay.net, tfsa: c.tfsa.net, rrsp: c.rrsp.net };
+    window._lastCompare = c; return { prepay: c.prepay.net, tfsa: c.tfsa.net, rrsp: c.rrsp.net };
   };
   window.afford = () => {
     const b = S.buy, qual = E.qualifyingRate(b.rate), inc = n(b.income) / 12;
@@ -88,7 +232,6 @@
     return { qual, loan, max, maxP, minDown: E.minDownPayment };
   };
 
-  /* 4. SMALL UI HELPERS */
   const money = (path, val) => `<input type="number" inputmode="decimal" step="any" value="${n(val)}" onchange="set('${path}', +this.value); later()">`;
   const tag = (t, cls = '') => `<span class="tag ${cls}">${t}</span>`;
   const CALC = tag('Calculated', 'acc'), EST = tag('Estimate', 'warn');
@@ -100,7 +243,6 @@
   const usingDefaults = () => DEF_KEYS.filter(([k]) => S[k] === DEF[k] && !(S.confirmed || []).includes(k) && (hasMortgage() || !['home', 'bal', 'pmt', 'maturity'].includes(k)));
   window.confirmDefaults = () => { S.confirmed = DEF_KEYS.map(k => k[0]); save(); render(); };
 
-  /* 5. HOME - My Financial Life */
   function opportunities(m) {
     const out = [];
     if (m.unallocated < 0) out.push({ t: `Your plan is short ${$(-m.unallocated)} a month`, d: 'Income doesn\'t cover living costs, required debt payments and planned savings. Reduce lifestyle spending or lower planned savings until this is zero or positive.', kind: 'Calculated', go: "go('budget')", q: 'My budget is negative. Where could I realistically cut?' });
@@ -124,18 +266,13 @@
     }
     return out.slice(0, 3);
   }
-
   function projection(m, years = 10) {
-    const home = k => m.home * Math.pow(1 + n(S.growth) / 100, k);
-    const sv = S.budget.savings;
-    const contrib = n(sv.tfsa) + n(sv.rrsp) + n(sv.fhsa) + n(sv.nonreg) + n(sv.other);
-    const inv = E.grow(m.invest, contrib, S.ret, years * 12).path;
-    const A = [], L = [], N = [];
+    const sv = S.budget.savings, contrib = n(sv.tfsa) + n(sv.rrsp) + n(sv.fhsa) + n(sv.nonreg) + n(sv.other);
+    const inv = E.grow(m.invest, contrib, S.ret, years * 12).path, A = [], L = [], N = [];
     for (let k = 0; k <= years; k++) {
       const mort = m.mp.path[k] ?? (m.mp.months === Infinity ? m.mp.path.at(-1) : 0);
       const deb = m.dp.path[k] ?? (m.dp.months === Infinity ? m.dp.path.at(-1) : 0);
-      const cash = n(S.cash) + n(sv.emergency) * 12 * k;
-      A.push(home(k) + inv[k] + cash); L.push(mort + deb); N.push(A[k] - L[k]);
+      A.push(m.home * Math.pow(1 + n(S.growth) / 100, k) + inv[k] + n(S.cash) + n(sv.emergency) * 12 * k); L.push(mort + deb); N.push(A[k] - L[k]);
     }
     return { A, L, N };
   }
@@ -172,7 +309,6 @@
     <p class="foot">Figures marked Calculated come from EquityClimb's tested calculators using the numbers you entered. Estimates depend on assumptions you can change. This is general information, not financial advice.</p>`;
   };
 
-  /* 6. BUDGET - five groups */
   const LABELS = {
     essentials: [['housing', 'Housing', 'Rent, property tax, condo fees. NOT your mortgage payment.'], ['groceries', 'Groceries'], ['utilities', 'Utilities', 'Power, heat, water, internet, phone'], ['insurance', 'Insurance', 'Home, auto, life'], ['transport', 'Transportation', 'Fuel, transit, parking, maintenance'], ['health', 'Healthcare'], ['other', 'Other necessities', 'Childcare, minimum clothing, etc.']],
     lifestyle: [['restaurants', 'Restaurants'], ['entertainment', 'Entertainment'], ['shopping', 'Shopping'], ['travel', 'Travel'], ['hobbies', 'Hobbies'], ['subscriptions', 'Subscriptions'], ['other', 'Other discretionary']],
@@ -215,7 +351,6 @@
     <p class="foot">Taxes are not entered separately because income is take-home. Mortgage interest and principal are counted together once under Debt payments. Transfers to TFSA, RRSP or FHSA are savings, not spending.</p>`;
   };
 
-  /* 7. DEBT & MORTGAGE */
   window.dTab = window.dTab || 'mortgage';
   let dExtra = 200;
   window.setDExtra = v => { dExtra = +v || 0; render(); };
@@ -257,7 +392,6 @@
   }
   V.debt = () => `${head('Debt & Mortgage', 'What you owe, and the fastest way out', '')}${tabs('dTab', [['mortgage', 'Mortgage'], ['debts', `Other debts${(S.debts || []).length ? ' (' + S.debts.length + ')' : ''}`]])}${dTab === 'mortgage' ? mortgageTab() : debtsTab()}`;
 
-  /* 8. INVESTING & WEALTH */
   window.wTab = window.wTab || 'strategy';
   function projectionTab() {
     const m = model(), sv = S.budget.savings, mo = n(sv.tfsa) + n(sv.rrsp) + n(sv.fhsa) + n(sv.nonreg) + n(sv.other), Y = Math.max(1, n(S.years)), M = Y * 12;
@@ -274,7 +408,6 @@
     return `${head('Investing & Wealth', 'Grow what you keep', '')}${tabs('wTab', [['strategy', 'Pay down vs invest'], ['projection', 'Investment projection']])}${body}`;
   };
 
-  /* 9. GOALS (goals + home buying) */
   window.gTab = window.gTab || 'goals';
   P.buy = () => {
     const b = S.buy, a = afford(), dp = b.down / b.price, L = b.price - b.down, prem = dp < .2 ? L * E.insurancePremium(dp) : 0, pm = E.payment(L + prem, b.rate, b.amort), md = E.minDownPayment(b.price);
@@ -297,14 +430,12 @@
   }
   V.goals = () => `${head('Goals & Roadmap', 'What you\'re working toward', '')}${tabs('gTab', [['goals', 'My goals'], ['buy', 'Buying a home']])}${gTab === 'goals' ? goalsWithCheck() : P.buy()}`;
 
-  /* 10. SETTINGS gets "My numbers" + assumptions */
   const oldSettings = V.settings;
   V.settings = () => `${oldSettings()}<div class="sp"></div>${head('My numbers', 'Entered once, used everywhere')}${P.numbers()}
     <div class="sp"></div><div class="grid g2"><div class="card"><h2>Rental suite</h2>${F('rentalExp', 'Rental operating costs / month', 'Share of utilities, insurance, repairs, maintenance')}${F('vacancy', 'Vacancy (%)')}</div>
     <div class="card"><h2>Planning assumptions <span class="tag">v${E.ASSUMPTIONS.version}</span></h2>${F('tfsaNew', 'New TFSA room each year', 'Check the current limit with CRA')}${F('rrspNew', 'New RRSP room each year', 'Shown on your Notice of Assessment')}
     <div class="hint">${E.ASSUMPTIONS.note} Stress test floor ${E.ASSUMPTIONS.stressFloor}%. Non-registered tax drag ${E.ASSUMPTIONS.nonRegTaxDrag}% a year.</div></div></div>`;
 
-  /* 11. COPILOT gets calculated context (not guesses) */
   window.ask = async function (text) {
     const q = (text || document.getElementById('q')?.value || '').trim(); if (!q || busy) return;
     S.chat.push({ role: 'user', content: q }); busy = true; save(); render();
@@ -325,13 +456,11 @@
     S.chat.push({ role: 'assistant', content: j.error ? '⚠ ' + j.error + ' Your calculators still work without the AI.' : j.text }); busy = false; save(); render();
   };
 
-  /* 12. ONBOARDING (quick start) */
   const oldOnboard = V.onboard;
   V.onboard = () => {
     if (ob !== 3) return oldOnboard();
     const own = S.profile.goal === 'own' || S.profile.goal === 'invest';
-    const dots = `<div class="dots">${[1, 2, 3].map(() => '<i class="on"></i>').join('')}</div>`;
-    return `<div class="ob">${dots}${head('Step 3 of 3', 'Your quick numbers', 'Rough figures are fine. You can split them into categories later, and anything you skip is marked as an estimate.')}
+    return `<div class="ob"><div class="dots"><i class="on"></i><i class="on"></i><i class="on"></i></div>${head('Step 3 of 3', 'Your quick numbers', 'Rough figures are fine. You can split them into categories later, and anything you skip is marked as an estimate.')}
       <div class="card">${F('income', 'Take-home pay / month (household)')}
       ${F('budget.essentials.other', 'Essential living costs / month', own ? 'Groceries, utilities, insurance, transport. Not your mortgage.' : 'Rent, groceries, utilities, insurance, transport')}
       ${F('budget.lifestyle.other', 'Everything else you spend / month', 'Eating out, shopping, subscriptions, travel')}
@@ -342,7 +471,6 @@
   };
   window.finishOb = () => { S.profile.onboarded = true; S.rateMode = S.rtype === 'Variable' ? 'Live' : 'Manual'; S.compounding = S.rtype === 'Fixed' ? 'Semi-annual' : S.compounding; S.migrationNotes = []; save(); applyRates(); go('home'); };
 
-  /* 13. NAVIGATION (6 areas) */
   I.debt = '<rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18M7 15h4"/>';
   I.goal = '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/>';
   I.wallet = '<path d="M4 7h14a2 2 0 012 2v9a2 2 0 01-2 2H6a2 2 0 01-2-2V7z"/><path d="M4 7l11-3v3"/><circle cx="16" cy="13.5" r="1.2"/>';
@@ -376,7 +504,6 @@
     if (keep && document.getElementById(keep)) document.getElementById(keep).focus();
   };
 
-  /* start */
   migrate();
   const h = location.hash.slice(1); cur = LEGACY[h] || (V[h] && h !== 'onboard' ? h : 'home');
   render();
