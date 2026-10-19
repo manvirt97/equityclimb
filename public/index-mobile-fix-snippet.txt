@@ -1,3 +1,0 @@
-Add this exact line directly AFTER the premium.css line inside public/index.html:
-
-<link rel="stylesheet" href="market-mobile-fix.css?v=44">
