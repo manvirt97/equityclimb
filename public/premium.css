@@ -43,3 +43,27 @@ h1{font-size:clamp(29px,3vw,40px);letter-spacing:-.025em}.lede{font-size:14px}
   .tabbar .nav span{font-size:9.5px}.chat{height:calc(100dvh - 235px)}
 }
 @media(max-width:350px){.grid.g4{grid-template-columns:1fr}.intel-tab{font-size:11px!important;padding:9px 6px!important}}
+
+/* ===== Goals page on phones (v6.2) =====
+   Only affects the Goals card (the one with the "+ Add goal" button), only on screens 700px or narrower.
+   Each goal becomes a stacked card that fits the screen; desktop table is unchanged. */
+@media(max-width:700px){
+  .card:has(> button[onclick*="S.goals.push"]){overflow:hidden}
+  .card:has(> button[onclick*="S.goals.push"]) table,
+  .card:has(> button[onclick*="S.goals.push"]) tbody{display:block;width:100%;min-width:0}
+  .card:has(> button[onclick*="S.goals.push"]) tr:has(th){display:none}
+  .card:has(> button[onclick*="S.goals.push"]) tr{position:relative;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;width:100%;padding:16px 0;border-bottom:1px solid var(--line)}
+  .card:has(> button[onclick*="S.goals.push"]) tr:last-child{border-bottom:0}
+  .card:has(> button[onclick*="S.goals.push"]) td{display:block;min-width:0;padding:0;border:0;text-align:left;white-space:normal}
+  .card:has(> button[onclick*="S.goals.push"]) td:nth-child(1){grid-column:1/-1;padding-right:46px}
+  .card:has(> button[onclick*="S.goals.push"]) td input{width:100%!important;max-width:100%;box-sizing:border-box;font-size:16px}
+  .card:has(> button[onclick*="S.goals.push"]) td:nth-child(1) input[type=date]{width:auto!important;max-width:100%;margin-top:6px}
+  .card:has(> button[onclick*="S.goals.push"]) td:nth-child(n+2):nth-child(-n+6)::before{display:block;margin-bottom:5px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+  .card:has(> button[onclick*="S.goals.push"]) td:nth-child(2)::before{content:"Target"}
+  .card:has(> button[onclick*="S.goals.push"]) td:nth-child(3)::before{content:"Saved"}
+  .card:has(> button[onclick*="S.goals.push"]) td:nth-child(4)::before{content:"Monthly"}
+  .card:has(> button[onclick*="S.goals.push"]) td:nth-child(5)::before{content:"Needed / month"}
+  .card:has(> button[onclick*="S.goals.push"]) td:nth-child(6)::before{content:"Status"}
+  .card:has(> button[onclick*="S.goals.push"]) td:nth-child(5){font-weight:600;font-size:16px;color:var(--ink)}
+  .card:has(> button[onclick*="S.goals.push"]) td:nth-child(7){position:absolute;top:16px;right:0}
+}
