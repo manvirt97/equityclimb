@@ -1,20 +1,29 @@
-/* EquityClimb v7.1 - sign in with Google, email link or phone number (Firebase Authentication).
-   Loads after ec-v7.js. Fills the sign-in box on Settings (and on the welcome screen) and hands the
-   signed-in account to the existing encrypted phone <-> laptop sync. */
+/* EquityClimb v7.2 - sign in with Google, email link, phone number, and optional Microsoft, Yahoo,
+   Facebook, GitHub, Apple or X (Firebase Authentication). Loads after ec-v7.js. Fills the sign-in box on
+   Settings (and the welcome screen) and hands the signed-in account to the encrypted phone <-> laptop sync. */
 (function () {
   'use strict';
   if (window.__ecAuth) return; window.__ecAuth = true;
   const SDK = 'https://www.gstatic.com/firebasejs/10.12.2/';
   const LINK_EMAIL = 'ec_email_for_link';
-  const A = { cfg: null, auth: null, state: 'idle', mode: 'menu', msg: '', err: '', email: localStorage.getItem(LINK_EMAIL) || '', phone: '', confirm: null, verifier: null, busy: false };
+  const A = { cfg: null, auth: null, state: 'idle', mode: 'menu', msg: '', err: '', email: localStorage.getItem(LINK_EMAIL) || '', phone: '', confirm: null, verifier: null, busy: false, inputs: null };
   const e = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const signedIn = () => { try { return !!JSON.parse(localStorage.getItem('ec_session') || 'null'); } catch { return false; } };
   const loadScript = src => new Promise((ok, no) => { const s = document.createElement('script'); s.src = src; s.onload = ok; s.onerror = () => no(Error('load')); document.head.appendChild(s); });
 
+  // Extra sign-in buttons (each one is switched on by the app owner in Firebase + the SIGNIN_PROVIDERS setting).
+  const PROV = {
+    microsoft: { label: 'Microsoft (Outlook, Hotmail)', icon: '<svg viewBox="0 0 24 24" width="17" height="17"><path fill="#F25022" d="M1 1h10v10H1z"/><path fill="#7FBA00" d="M13 1h10v10H13z"/><path fill="#00A4EF" d="M1 13h10v10H1z"/><path fill="#FFB900" d="M13 13h10v10H13z"/></svg>', make: () => { const p = new firebase.auth.OAuthProvider('microsoft.com'); p.setCustomParameters({ prompt: 'select_account' }); p.addScope('email'); return p; } },
+    yahoo: { label: 'Yahoo', icon: '<span class="ec-a-ic" style="color:#7B1FA2;font-weight:800">Y!</span>', make: () => { const p = new firebase.auth.OAuthProvider('yahoo.com'); p.addScope('email'); return p; } },
+    facebook: { label: 'Facebook', icon: '<span class="ec-a-ic" style="color:#1877F2;font-weight:800">f</span>', make: () => { const p = new firebase.auth.FacebookAuthProvider(); p.addScope('email'); return p; } },
+    github: { label: 'GitHub', icon: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M12 .5a12 12 0 00-3.8 23.4c.6.1.8-.3.8-.6v-2c-3.3.7-4-1.6-4-1.6-.6-1.4-1.4-1.8-1.4-1.8-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.7-.3-5.5-1.3-5.5-6 0-1.2.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.2 0 0 1-.3 3.3 1.2a11.5 11.5 0 016 0C17.3 4.7 18.3 5 18.3 5c.6 1.7.2 2.9.1 3.2.8.8 1.2 1.9 1.2 3.1 0 4.7-2.8 5.6-5.5 5.9.4.4.8 1.1.8 2.2v3.3c0 .3.2.7.8.6A12 12 0 0012 .5z"/></svg>', make: () => { const p = new firebase.auth.GithubAuthProvider(); p.addScope('user:email'); return p; } },
+    apple: { label: 'Apple', icon: '<svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><path d="M16.4 12.6c0-2.4 2-3.6 2.1-3.7-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.2-.8A4.7 4.7 0 004.1 9.5c-1.7 3-.4 7.4 1.2 9.8.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.2-.8s1.9.8 3.2.8c1.3 0 2.2-1.2 3-2.4a10 10 0 001.4-2.8c-.1 0-2.7-1-2.7-3.9zM14 5.5c.7-.8 1.1-1.9 1-3-1 0-2.1.7-2.8 1.5-.6.7-1.2 1.8-1 2.9 1.1.1 2.1-.6 2.8-1.4z"/></svg>', make: () => { const p = new firebase.auth.OAuthProvider('apple.com'); p.addScope('email'); p.addScope('name'); return p; } },
+    twitter: { label: 'X (Twitter)', icon: '<span class="ec-a-ic" style="font-weight:800;color:var(--ink)">X</span>', make: () => new firebase.auth.TwitterAuthProvider() }
+  };
+
   async function start() {
     try { A.cfg = await (await fetch('/api/config', { cache: 'no-store' })).json(); } catch { A.cfg = null; }
     if (!A.cfg?.syncReady || !A.cfg.firebase) { paint(); return; }
-    // Finishing an email-link sign-in? Load straight away. Otherwise load when the sign-in box is shown.
     if (/[?&](oobCode|apiKey)=/.test(location.href)) await boot();
     paint();
   }
@@ -47,23 +56,30 @@
   }
   const friendly = err => {
     const c = err?.code || '';
-    if (c === 'auth/popup-closed-by-user' || c === 'auth/cancelled-popup-request') return '';
-    if (c === 'auth/popup-blocked') return 'Your browser blocked the Google window. Allow pop-ups for this site, or use the email option below.';
+    if (c === 'auth/popup-closed-by-user' || c === 'auth/cancelled-popup-request' || c === 'auth/user-cancelled') return '';
+    if (c === 'auth/popup-blocked') return 'Your browser blocked the sign-in window. Allow pop-ups for this site, or use the email option.';
     if (c === 'auth/unauthorized-domain') return 'This web address isn\u2019t approved yet. The app owner must add it in Firebase \u2192 Authentication \u2192 Settings \u2192 Authorized domains.';
-    if (c === 'auth/operation-not-allowed') return 'This sign-in method isn\u2019t switched on yet in Firebase \u2192 Authentication \u2192 Sign-in method.';
+    if (c === 'auth/operation-not-allowed') return 'This sign-in method isn\u2019t switched on yet. Please choose another option.';
+    if (c === 'auth/account-exists-with-different-credential') return 'You already signed in with this email using a different option (for example Google). Please use that option.';
     if (c === 'auth/invalid-email') return 'That email address doesn\u2019t look right.';
     if (c === 'auth/invalid-action-code' || c === 'auth/expired-action-code') return 'That sign-in link has expired or was already used. Send a new one.';
     if (c === 'auth/invalid-phone-number') return 'Enter your phone number with area code, e.g. 403 555 1234.';
     if (c === 'auth/invalid-verification-code') return 'That code isn\u2019t right. Check the text message and try again.';
     if (c === 'auth/too-many-requests' || c === 'auth/quota-exceeded') return 'Too many attempts. Please wait a few minutes and try again.';
-    if (c === 'auth/billing-not-enabled') return 'Phone sign-in isn\u2019t available yet. Please use Google or email.';
+    if (c === 'auth/billing-not-enabled') return 'Phone sign-in isn\u2019t available yet. Please use another option.';
     if (c === 'auth/network-request-failed') return 'No connection. Check your internet and try again.';
     return err?.message || 'Something went wrong. Please try again.';
   };
   const val = id => (A.inputs?.[id] ?? document.getElementById(id)?.value ?? '');
-  async function run(fn) { if (A.busy) return; A.inputs = {}; document.querySelectorAll('.ec-a input').forEach(i => { if (i.value) A.inputs[i.id] = i.value; }); A.busy = true; A.err = ''; paint(); try { await fn(); } catch (err) { A.err = friendly(err); } A.busy = false; A.inputs = null; paint(); }
+  async function run(fn) {
+    if (A.busy) return;
+    A.inputs = {}; document.querySelectorAll('.ec-a input').forEach(i => { if (i.value) A.inputs[i.id] = i.value; });
+    A.busy = true; A.err = ''; paint();
+    try { await fn(); } catch (err) { A.err = friendly(err); }
+    A.busy = false; A.inputs = null; paint();
+  }
 
-  /* ---------- the three ways to sign in ---------- */
+  /* ---------- sign-in actions ---------- */
   const W = window.ECAuth = {};
   W.retry = () => { A.state = 'idle'; A.err = ''; boot(); };
   W.mode = m => { A.mode = m; A.err = ''; A.msg = ''; paint(); };
@@ -71,6 +87,7 @@
     const p = new firebase.auth.GoogleAuthProvider(); p.setCustomParameters({ prompt: 'select_account' });
     const res = await A.auth.signInWithPopup(p); await exchange(res.user);
   });
+  W.provider = key => run(async () => { const res = await A.auth.signInWithPopup(PROV[key].make()); await exchange(res.user); });
   W.sendLink = () => run(async () => {
     const em = val('ec-a-email').trim().toLowerCase();
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) throw { code: 'auth/invalid-email' };
@@ -93,7 +110,7 @@
     await finishLink(link, false);
   });
   W.sendCode = () => run(async () => {
-    let raw = val('ec-a-phone').trim(), d = raw.replace(/[^\d+]/g, '');
+    let d = val('ec-a-phone').trim().replace(/[^\d+]/g, '');
     if (!d.startsWith('+')) d = d.length === 10 ? '+1' + d : d.length === 11 && d.startsWith('1') ? '+' + d : d;
     if (!/^\+\d{8,15}$/.test(d)) throw { code: 'auth/invalid-phone-number' };
     let host = document.getElementById('ec-recaptcha');
@@ -131,10 +148,12 @@
     if (A.mode === 'phoneCode') return `<div class="ec-a"><label>Enter the 6-digit code sent to ${e(A.phone)}</label>
       <div class="ec-a-row"><input id="ec-a-code" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456" onkeydown="if(event.key==='Enter')ECAuth.verifyCode()"><button class="btn sm" ${dis} onclick="ECAuth.verifyCode()">${A.busy ? 'Checking\u2026' : 'Sign in'}</button></div>${err}
       <a href="#" class="small" onclick="ECAuth.mode('phone');return false">Didn\u2019t get it? Send again</a></div>`;
+    const extra = (A.cfg.providers || []).filter(k => PROV[k]).map(k => `<button class="ec-a-btn" ${dis} onclick="ECAuth.provider('${k}')">${PROV[k].icon}<span>Continue with ${e(PROV[k].label)}</span></button>`).join('');
     return `<div class="ec-a">
       <button class="ec-a-btn" ${dis} onclick="ECAuth.google()">${G}<span>Continue with Google</span></button>
       <button class="ec-a-btn" ${dis} onclick="ECAuth.mode('email')"><span class="ec-a-ic">\u2709</span><span>Continue with email</span></button>
-      ${A.cfg.phoneEnabled ? `<button class="ec-a-btn" ${dis} onclick="ECAuth.mode('phone')"><span class="ec-a-ic">\u260E</span><span>Continue with phone number</span></button>` : ''}${err}</div>`;
+      ${A.cfg.phoneEnabled ? `<button class="ec-a-btn" ${dis} onclick="ECAuth.mode('phone')"><span class="ec-a-ic">\u260E</span><span>Continue with phone number</span></button>` : ''}
+      ${extra}${err}</div>`;
   }
   function paint() {
     const slots = document.querySelectorAll('.ec-gsi');
@@ -144,14 +163,13 @@
     slots.forEach(el => { if (el.dataset.ecA !== html) { el.innerHTML = html; el.dataset.ecA = html; el.dataset.done = 1; } });
   }
 
-  // Re-draw the box after every page change.
   const r0 = window.render;
   window.render = function () { r0.apply(this, arguments); try { paint(); } catch (err) { console.error(err); } };
   const css = document.createElement('style');
   css.textContent = `.ec-a{display:flex;flex-direction:column;gap:10px;max-width:380px}
 .ec-a-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:12px 16px;border-radius:999px;border:1px solid var(--line2);background:var(--bg);color:var(--ink);font-weight:600;font-size:14.5px;cursor:pointer}
 .ec-a-btn:hover:not([disabled]){border-color:var(--accent)}.ec-a-btn[disabled]{opacity:.6;cursor:default}
-.ec-a-ic{font-size:17px;line-height:1;color:var(--accent)}
+.ec-a-ic{font-size:17px;line-height:1;color:var(--accent);min-width:17px;text-align:center}
 .ec-a-row{display:flex;gap:8px}.ec-a-row input{flex:1;min-width:0}
 .ec-a label{margin:0}.ec-a-err{margin-top:2px}`;
   document.head.appendChild(css);
