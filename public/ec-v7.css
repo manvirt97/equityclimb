@@ -1,0 +1,60 @@
+/* EquityClimb v7 add-on styles (works with styles.css, premium.css and v5-market.css) */
+.ec-remind{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.ec-remind>svg{width:20px;height:20px;stroke:var(--accent);flex:none}
+.ec-remind .row{gap:6px}
+.ec-toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translate(-50%,20px);opacity:0;z-index:300;background:var(--surface2);color:var(--ink);border:1px solid var(--line2);border-radius:12px;padding:11px 16px;font-size:13.5px;box-shadow:0 14px 40px rgba(0,0,0,.35);transition:all .3s ease;max-width:calc(100vw - 32px);text-align:center}
+.ec-toast.on{opacity:1;transform:translate(-50%,0)}
+@media(min-width:921px){.ec-toast{bottom:28px}}
+.ec-modal{position:fixed;inset:0;z-index:250;background:rgba(0,0,0,.6);backdrop-filter:blur(5px);display:grid;place-items:center;padding:16px}
+.ec-modal-card{width:min(460px,100%)}
+/* Learn */
+.ec-lesson{display:flex;flex-direction:column;align-items:flex-start;gap:7px;text-align:left;cursor:pointer;min-height:150px;color:var(--ink);transition:transform .15s ease,border-color .15s ease}
+.ec-lesson:hover{border-color:var(--accent);transform:translateY(-2px)}
+.ec-lesson b{font-size:15.5px;line-height:1.35;flex:1}
+.ec-lic svg{width:24px;height:24px;stroke:var(--accent)}
+.ec-next{background:linear-gradient(135deg,rgba(201,171,108,.16),rgba(54,74,101,.12) 55%,transparent),var(--surface)}
+.ec-body p{font-size:15.5px;line-height:1.65;color:var(--ink2);margin:0 0 14px}
+.ec-body p b{color:var(--ink)}
+.ec-q{padding:14px 0;border-bottom:1px solid var(--line)}.ec-q:last-of-type{border-bottom:0}
+.ec-qq{font-weight:600;margin-bottom:8px;line-height:1.45}
+.ec-opt{display:block;width:100%;text-align:left;margin:6px 0;padding:11px 14px;border-radius:11px;border:1px solid var(--line2);background:var(--bg);color:var(--ink);cursor:pointer;font-size:14px;line-height:1.4}
+.ec-opt:hover:not([disabled]){border-color:var(--accent)}
+.ec-opt[disabled]{cursor:default;opacity:.75}
+.ec-opt.right{border-color:var(--pos);background:rgba(103,196,154,.1);opacity:1}
+.ec-opt.wrong{border-color:var(--neg);background:rgba(239,125,115,.08);opacity:1}
+.ec-flame{width:18px;height:18px;stroke:#f0a24a;vertical-align:-3px}
+.ec-minute .ec-tip{font-family:var(--serif);font-size:17px;line-height:1.45;color:var(--ink)}
+/* Health */
+.ec-ring{--p:0;width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--accent) calc(var(--p)*1%),var(--surface2) 0)}
+.ec-ring span{width:46px;height:46px;border-radius:50%;background:var(--surface);display:grid;place-items:center;font-weight:700;font-size:15px}
+.ec-hp{display:grid;grid-template-columns:130px 1fr;gap:4px 12px;align-items:center;padding:7px 0;border-bottom:1px solid var(--line);font-size:13px}
+.ec-hp:last-of-type{border-bottom:0}
+.ec-hp .small{grid-column:2}
+/* Mortgage */
+.ec-stage{border-radius:11px;padding:11px 14px;font-size:13.5px;border:1px solid var(--line2);margin-top:8px}
+.ec-stage.pos{border-color:rgba(103,196,154,.4);background:rgba(103,196,154,.07)}
+.ec-stage.warn{border-color:rgba(224,175,85,.45);background:rgba(224,175,85,.08)}
+.ec-stage.neg{border-color:rgba(239,125,115,.45);background:rgba(239,125,115,.08)}
+.ec-check{margin-top:12px}.ec-check summary{cursor:pointer;font-weight:600;font-size:13.5px}.ec-check ol{padding-left:18px;line-height:1.7;color:var(--ink2)}
+.ec-switch{display:flex;gap:9px;align-items:center;font-weight:500;margin-top:14px}.ec-switch input{width:auto}
+.chip.on{border-color:var(--accent);color:var(--ink);background:var(--surface2)}
+/* Copilot */
+.ec-fu{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:6px 0 2px}
+.ec-fu .small{width:100%}
+.ec-learnchip svg{width:14px;height:14px;stroke:var(--accent)}
+.ec-typing{display:inline-flex;gap:4px}.ec-typing i{width:7px;height:7px;border-radius:50%;background:var(--mute);animation:ecdot 1.2s infinite}.ec-typing i:nth-child(2){animation-delay:.15s}.ec-typing i:nth-child(3){animation-delay:.3s}
+@keyframes ecdot{0%,60%,100%{opacity:.3;transform:none}30%{opacity:1;transform:translateY(-3px)}}
+.composer textarea{overflow-y:auto}
+.ec-sendlbl{display:none}
+@media(pointer:coarse){.ec-sendlbl{display:inline}}
+/* Deals */
+.ec-deal{padding:12px 0;border-bottom:1px solid var(--line)}.ec-deal:last-of-type{border-bottom:0}
+.ec-dealwho{font-weight:650;margin:6px 0 3px;font-size:14px}
+.v5-side-card h2 svg,.card h2 svg{width:17px;height:17px;stroke:var(--accent);vertical-align:-3px}
+.ec-gsi{min-height:44px}
+@media(max-width:700px){
+  .ec-hp{grid-template-columns:1fr}.ec-hp .small{grid-column:1}
+  .ec-remind{align-items:flex-start}.ec-remind .row{width:100%}
+  .ec-lesson{min-height:0}
+  .ec-body p{font-size:15px}
+}
