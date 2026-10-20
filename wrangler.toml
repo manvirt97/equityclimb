@@ -1,8 +1,28 @@
-# Cloudflare Pages configuration for EquityClimb
+# Cloudflare Pages configuration for EquityClimb (v7.2 - sync with Google, email, phone and more sign-in options)
 name = "equityclimb"
 pages_build_output_dir = "public"
 compatibility_date = "2026-10-01"
 
-# Connects Cloudflare Workers AI (free daily allowance) to the Advisor, briefs and neighbourhood guides
+# Cloudflare Workers AI (free daily allowance) for Copilot, briefs, neighbourhoods and the Deal Tracker
 [ai]
 binding = "AI"
+
+# Sync database (free Cloudflare D1)
+[[d1_databases]]
+binding = "DB"
+database_name = "equityclimb-sync"
+database_id = "14eb490a-2fb1-4f16-aa94-41cc37d3d487"
+
+# Firebase sign-in settings (public web settings, not passwords).
+[vars]
+FIREBASE_PROJECT_ID = "equityclimb"
+FIREBASE_API_KEY = "AIzaSyBw0xHFlzMq40LWDhW4dTBaWdXFvU2YzD4"
+FIREBASE_AUTH_DOMAIN = "equityclimb.firebaseapp.com"
+FIREBASE_APP_ID = "1:93193321685:web:39a476b60b98801abfb65c"
+
+# Phone-number sign-in: change "off" to "on" ONLY after Firebase is on the Blaze plan and Phone is enabled.
+PHONE_SIGNIN = "off"
+
+# Extra sign-in buttons. Add a name here ONLY after switching it on in Firebase -> Authentication -> Sign-in method.
+# Choices: microsoft, yahoo, facebook, github, apple, twitter   (example: "microsoft,yahoo")
+SIGNIN_PROVIDERS = ""
