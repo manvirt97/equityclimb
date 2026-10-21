@@ -1,10 +1,10 @@
-/* EquityClimb v10 - add-on. Loads LAST. Only adds / re-orders; nothing existing is removed.
+/* EquityClimb v10 (v11 build) - add-on. Loads LAST. Only adds / re-orders; nothing existing is removed.
    1. Home: Financial health check + Today's money minute move to the bottom
-   2. Budget: the five groups always show in order 1-2-3-4-5
+   2. Budget: the five groups sit in two equal columns under the summary bar, in order 1-2-3-4-5
    3. Market: editable watchlist (add / remove any stock, ETF, index, crypto), working Refresh for rates AND prices
    4. Copilot: pick the AI model, chats are saved to History, every new visit starts a fresh chat
-   5. Learn: a new AI lesson every day, "learn anything" on demand, and live articles from the web (never runs out)
-*/
+   5. Learn: a new AI lesson every day, "learn anything" on demand, and live articles from the web
+   6. Menu: Market and Neighbourhoods sit right under Goals */
 (function () {
   'use strict';
   if (window.__ec10) return;
@@ -67,34 +67,26 @@
     }
     return null;
   }
+  const emptyShell = el => !el.children.length && !(el.textContent || '').trim();
+  /* Finds the five numbered cards, lifts them out of whatever columns the page put them in, and places them in ONE
+     full-width two-column grid right under the summary bar: 1 | 2, 3 | 4, then 5 across the full width. */
   function fixBudget(html) {
     const f = tpl(html), seen = numberedHeads(f);
     if (!seen) return html;
     const heads = [...seen.values()];
-    const cardOf = h => { let c = h; while (c.parentNode && c.parentElement && heads.every(o => o === h || !c.parentNode.contains(o))) c = c.parentNode; return c; };
+    const cardOf = h => { let c = h; while (c.parentElement && heads.every(o => o === h || !c.parentElement.contains(o))) c = c.parentElement; return c; };
     const cards = [...seen.keys()].sort((a, b) => a - b).map(n => ({ n, el: cardOf(seen.get(n)) }));
     if (new Set(cards.map(c => c.el)).size !== cards.length) return html;
-    const parents = new Set(cards.map(c => c.el.parentNode));
-    if (parents.size === 1 && cards[0].el.parentElement) {
-      // all five already share one container: keep it, put the cards in 1-2-3-4-5 order and give it a clean two-column grid
-      const P = cards[0].el.parentElement, kids = [...P.children];
-      const slots = kids.map((ch, i) => (cards.some(c => c.el === ch) ? i : -1)).filter(i => i >= 0);
-      const ordered = kids.slice(); slots.forEach((slot, k) => { ordered[slot] = cards[k].el; });
-      ordered.forEach(ch => P.appendChild(ch));
-      P.classList.add('ec10-bgrid');
-      cards.forEach(c => { c.el.classList.add('ec10-bcard'); c.el.dataset.n = c.n; });
-      return ser(f);
-    }
-    // cards are spread over wrappers (columns): gather them into one ordered grid
     let box = cards[0].el.parentNode;
     while (box && !cards.every(c => box.contains(c.el))) box = box.parentNode;
     if (!box) return html;
     let ref = cards[0].el; while (ref.parentNode !== box) ref = ref.parentNode;
-    const grid = document.createElement('div'); grid.className = 'ec10-bgrid';
+    const grid = document.createElement('div'); grid.className = 'ec10-budget';
     box.insertBefore(grid, ref);
-    const olds = cards.map(c => c.el.parentNode);
-    cards.forEach(c => { c.el.classList.add('ec10-bcard'); c.el.dataset.n = c.n; grid.appendChild(c.el); });
-    olds.forEach(p => { let x = p; while (x && x !== box && x !== grid && x.children && !x.children.length && !(x.textContent || '').trim()) { const up = x.parentNode; x.remove(); x = up; } });
+    const oldParents = cards.map(c => c.el.parentNode);
+    cards.forEach(c => { c.el.classList.add('ec10-bcard'); c.el.dataset.n = String(c.n); grid.appendChild(c.el); });
+    oldParents.forEach(p => { let x = p; while (x && x !== box && x !== grid && x.nodeType === 1 && emptyShell(x)) { const up = x.parentNode; x.remove(); x = up; } });
+    if (box.nodeType === 1) box.classList.add('ec10-bbox');
     return ser(f);
   }
   if (typeof V.budget === 'function') {
@@ -102,10 +94,27 @@
     V.budget = function () { const html = budget0.apply(this, arguments); try { return fixBudget(html); } catch (_) { return html; } };
   }
 
+  /* ============================== 6. MENU ORDER ============================== */
+  /* Market and Neighbourhoods move up so they sit directly under Goals (above the dividing line). */
+  function reorderNav() {
+    const side = document.getElementById('side'); if (!side) return;
+    const btns = [...side.querySelectorAll('button.nav, a.nav')], by = l => btns.find(b => (b.textContent || '').trim().toLowerCase() === l);
+    const goals = by('goals'), market = by('market'), areas = by('neighbourhoods');
+    if (!goals || !market || !areas) return;
+    if (goals.nextElementSibling === market && market.nextElementSibling === areas) return;
+    goals.after(market); market.after(areas);
+  }
+
   /* ============================== 3. MARKET: watchlist + refresh ============================== */
   const SUGG = [['RY.TO', 'Royal Bank'], ['TD.TO', 'TD Bank'], ['ENB.TO', 'Enbridge'], ['CNQ.TO', 'Canadian Natural'], ['SU.TO', 'Suncor'], ['SHOP.TO', 'Shopify'], ['XIU.TO', 'TSX 60 ETF'], ['VFV.TO', 'S&P 500 ETF'], ['AAPL', 'Apple'], ['MSFT', 'Microsoft'], ['NVDA', 'NVIDIA'], ['BTC-USD', 'Bitcoin'], ['USDCAD=X', 'USD/CAD']];
   let Q = jparse(localStorage.getItem('ec10_q'), null), qBusy = false, qErr = '', editing = false, snapBusy = false;
-  const fmtPrice = v => new Intl.NumberFormat('en-CA', { minimumFractionDigits: 2, maximumFractionDigits: v >= 10000 ? 0 : v < 10 ? 4 : 2 }).format(v);
+  /* Prices of 10,000 or more (like the TSX) show with no decimals. (Asking for "at least 2 decimals but at most 0"
+     was an error that crashed the Market page, so the minimum is now always <= the maximum.) */
+  function fmtPrice(v) {
+    v = +v; if (!isFinite(v)) return '\u2014';
+    const big = Math.abs(v) >= 10000, maxD = big ? 0 : Math.abs(v) < 10 ? 4 : 2;
+    try { return new Intl.NumberFormat('en-CA', { minimumFractionDigits: Math.min(big ? 0 : 2, maxD), maximumFractionDigits: maxD }).format(v); } catch (_) { return String(Math.round(v * 100) / 100); }
+  }
 
   async function fetchQuotes(force) {
     const w = st().watch;
@@ -139,11 +148,11 @@
   function paintStatus() { const el = document.getElementById('ec10-snap-status'); if (el) el.textContent = statusText(); }
   function tile(w, q) {
     const x = editing ? `<button class="ec10-x" data-s="${E(w.s)}" onclick="EC10.remove(this.dataset.s)" aria-label="Remove ${E(w.n || w.s)}">\u00D7</button>` : '';
-    if (!q) return `<div class="card flat kpi ec10-tile"><div class="l">${E(w.n || w.s)} <span class="ec10-sym">${E(w.s)}</span>${x}</div><div class="v mute">\u2014</div><div class="h">No price yet</div></div>`;
-    const up = (q.changePct || 0) >= 0, cur0 = q.currency && q.currency !== 'CAD' ? ` <span class="ec10-cur">${E(q.currency)}</span>` : '';
+    if (!q || !isFinite(+q.value)) return `<div class="card flat kpi ec10-tile"><div class="l">${E(w.n || w.s)} <span class="ec10-sym">${E(w.s)}</span>${x}</div><div class="v mute">\u2014</div><div class="h">No price yet</div></div>`;
+    const pctv = q.changePct == null ? null : +q.changePct, up = (pctv || 0) >= 0, cur0 = q.currency && q.currency !== 'CAD' ? ` <span class="ec10-cur">${E(q.currency)}</span>` : '';
     return `<div class="card flat kpi ec10-tile"><div class="l">${E(w.n || q.name || w.s)} <span class="ec10-sym">${E(w.s)}</span>${x}</div>
       <div class="v">${fmtPrice(q.value)}${cur0}</div>
-      <div class="h">${q.changePct == null ? '' : `<span class="delta ${up ? 'pos' : 'neg'}">${up ? '\u25B2' : '\u25BC'} ${Math.abs(q.changePct).toFixed(2)}%</span> `}${q.open ? '<span class="tag pos">Open</span>' : '<span class="tag" title="Markets are closed, so the price shows the last close">Closed</span>'}</div></div>`;
+      <div class="h">${pctv == null || !isFinite(pctv) ? '' : `<span class="delta ${up ? 'pos' : 'neg'}">${up ? '\u25B2' : '\u25BC'} ${Math.abs(pctv).toFixed(2)}%</span> `}${q.open ? '<span class="tag pos">Open</span>' : '<span class="tag" title="Markets are closed, so the price shows the last close">Closed</span>'}</div></div>`;
   }
   function wlHtml() {
     const w = st().watch, by = {}; ((Q && Q.items) || []).forEach(i => { by[i.symbol] = i; });
@@ -163,14 +172,24 @@
     </div>`;
   }
   const strip0 = window.rateStrip;
-  const snapInner = () => (typeof strip0 === 'function' ? strip0() : '') + (cv() === 'market' ? wlHtml() : '');
+  /* The rate strip and the watchlist are drawn separately, so a problem in one can never take down the page or the other. */
+  const snapInner = () => {
+    let a = '', b = '';
+    try { a = typeof strip0 === 'function' ? strip0() : ''; } catch (err) { console.error(err); a = '<div class="note">Live rates couldn\u2019t be shown. <a href="#" onclick="loadRates(true);return false">Try again</a></div>'; }
+    if (cv() === 'market') {
+      try { b = wlHtml(); } catch (err) { console.error(err); b = '<div class="note" style="margin-top:14px">The watchlist hit a problem. <a href="#" onclick="EC10.resetList();return false">Reset it</a></div>'; }
+    }
+    return a + b;
+  };
   window.rateStrip = function () { return `<div id="ec10-snap">${snapInner()}</div>`; };
   function paintSnap() {
     const el = document.getElementById('ec10-snap'); if (!el) return;
     const a = document.activeElement; if (a && a.id === 'ec10-wl-q' && a.value) { paintStatus(); return; }
-    el.innerHTML = snapInner();
-    const chip = document.querySelector('.ratechip b');
-    if (chip && typeof prime === 'function' && prime()) chip.textContent = pct(prime(), 2);
+    try {
+      el.innerHTML = snapInner();
+      const chip = document.querySelector('.ratechip b');
+      if (chip && typeof prime === 'function' && prime()) chip.textContent = pct(prime(), 2);
+    } catch (err) { console.error(err); }
   }
   window.EC8_PAINT = paintSnap;
 
@@ -449,7 +468,9 @@
     genFrom(t) { const i = document.getElementById('ec10-topic'); if (i) i.value = t; genLesson(t); },
     feedTopic(k) { T.topic = k; T.feed = null; paintFeed(); loadFeed(false); },
     feedRefresh() { loadFeed(true); },
-    explain(i) { const x = T.feed && T.feed.items && T.feed.items[i]; if (x && window.EC7 && EC7.prefill) EC7.prefill(`Explain this headline in simple terms and what it could mean for me: "${x.title}"`); }
+    explain(i) { const x = T.feed && T.feed.items && T.feed.items[i]; if (x && window.EC7 && EC7.prefill) EC7.prefill(`Explain this headline in simple terms and what it could mean for me: "${x.title}"`); },
+    // exposed so the page can be checked without the screen
+    _fmtPrice: fmtPrice
   };
   if (window.EC7) {
     EC7.clearChat = () => EC10.newChat();
@@ -461,6 +482,7 @@
   window.render = function () {
     if (cv() !== 'learn') T.open = null;
     const out = render0.apply(this, arguments);
+    try { reorderNav(); } catch (_) { /* never block the page */ }
     try {
       if (cv() === 'market') {
         if (!qBusy && (!Q || !Q.t || Date.now() - Q.t > 5 * 6e4)) fetchQuotes(false);

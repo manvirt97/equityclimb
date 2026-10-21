@@ -1,4 +1,4 @@
-/* EquityClimb v10 add-on styles (uses the app's own colour variables) */
+/* EquityClimb v10 add-on styles (v11 build) - uses the app's own colour variables */
 
 /* ---- bottom-right corner: stack "Ask AI" above "News connected" so they never overlap ---- */
 .ec-news-key-button { right: 18px !important; bottom: 18px !important; padding: 8px 13px !important; font-size: 11.5px !important; opacity: .92; }
@@ -9,13 +9,21 @@ main { padding-bottom: 120px; }
   #ec8-ask { right: 12px !important; bottom: calc(134px + env(safe-area-inset-bottom)) !important; }
 }
 
-/* ---- Budget: five groups always in order 1-2-3-4-5 ---- */
-.ec10-bgrid { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 16px !important; align-items: stretch !important; columns: auto !important; column-count: auto !important; }
-.ec10-bgrid > * { margin-top: 0 !important; margin-bottom: 0 !important; min-width: 0; }
-.ec10-bgrid > *:not(.ec10-bcard) { grid-column: 1 / -1 !important; }
-.ec10-bgrid > .ec10-bcard { grid-column: auto !important; grid-row: auto !important; float: none !important; width: auto !important; break-inside: avoid; }
-.ec10-bgrid > .ec10-bcard[data-n="5"] { grid-column: 1 / -1 !important; }
-@media (max-width: 920px) { .ec10-bgrid { grid-template-columns: minmax(0, 1fr) !important; } .ec10-bgrid > .ec10-bcard[data-n="5"] { grid-column: auto !important; } }
+/* ---- Budget: five groups in ONE full-width, two-column grid under the summary bar: 1|2, 3|4, then 5 ---- */
+.ec10-bbox { display: block !important; columns: auto !important; column-count: auto !important; }
+.ec10-budget { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 16px !important; align-items: start !important;
+  width: 100% !important; max-width: none !important; min-width: 0 !important; flex: 1 1 100% !important; grid-column: 1 / -1 !important; margin: 16px 0 0 !important; float: none !important; }
+.ec10-budget > .ec10-bcard { width: auto !important; max-width: none !important; min-width: 0 !important; margin: 0 !important; float: none !important; position: static !important; grid-column: auto !important; grid-row: auto !important; overflow: hidden; box-sizing: border-box; }
+.ec10-budget > .ec10-bcard[data-n="5"] { grid-column: 1 / -1 !important; }
+/* keep typed-in boxes inside their card, whatever the window size */
+.ec10-bcard * { min-width: 0; }
+.ec10-bcard input, .ec10-bcard select { max-width: 100%; box-sizing: border-box; }
+.ec10-bcard label, .ec10-bcard .help, .ec10-bcard .hint, .ec10-bcard small, .ec10-bcard .small { overflow-wrap: anywhere; }
+/* below laptop width (sidebar + two columns gets cramped) the cards stack in one column, in order 1-2-3-4-5 */
+@media (max-width: 1180px) {
+  .ec10-budget { grid-template-columns: minmax(0, 1fr) !important; }
+  .ec10-budget > .ec10-bcard[data-n="5"] { grid-column: auto !important; }
+}
 
 /* ---- Market: watchlist ---- */
 .ec10-wl { margin-top: 18px; }
