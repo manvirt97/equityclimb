@@ -39,6 +39,11 @@ export function normalizeListing(x) {
 export async function onRequestGet({ request, env }) {
   const configured = !!env.REPLIERS_API_KEY && String(env.HOMES_PUBLIC_ENABLED || '').toLowerCase() === 'on';
   const q = new URL(request.url).searchParams;
+  if (q.get('mode') === 'sources') return json({ feeds: [
+    { source: 'Repliers', connected: configured, coverage: 'As permitted by the license', label: 'Existing licensed connector' },
+    { source: 'REALTOR.ca DDF', connected: false, coverage: 'Requires signed agreement and approved technical integration', label: 'Not yet connected' },
+    { source: 'Regional MLS boards', connected: false, coverage: 'Separate board rights and approved integrations required', label: 'Not yet connected' }
+  ], note: 'Coverage is not the same as all active MLS listings in Canada. No sources are combined until appropriate rights and attribution are implemented.' });
   if (q.get('mode') === 'status') return json({ enabled: configured, provider: configured ? 'Repliers' : null,
     reason: configured ? null : 'Live listing data requires an approved licensed feed. You can still search external portals and compare homes you add yourself.' });
   if (!configured) return json({ enabled: false, items: [], total: null, page: 1, pages: 0,

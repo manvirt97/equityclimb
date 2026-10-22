@@ -15,10 +15,10 @@
     'Saskatoon':[52.1332,-106.6700,11], 'Kelowna':[49.8880,-119.4960,11],
     'Hamilton':[43.2557,-79.8711,11], 'Quebec City':[46.8139,-71.2080,11]
   };
-  const iconNames = {home:'home',budget:'wallet',debt:'debt',wealth:'market',goals:'goal',homes:'house',areas:'map',market:'market',learn:'book',advisor:'ai',profile:'user',settings:'gear'};
+  const iconNames = {home:'home',budget:'wallet',debt:'debt',wealth:'market',goals:'goal',homes:'house',areas:'map',market:'market',learn:'book',advisor:'ai',profile:'user',settings:'gear',journey:'check'};
   const navGroups = [
     ['YOUR MONEY', [['home','Dashboard'],['budget','Budget & cash flow'],['debt','Debt & mortgage'],['wealth','Investing'],['goals','Goals']]],
-    ['EXPLORE', [['homes','Find a home'],['areas','Neighbourhoods'],['market','Markets & news']]],
+    ['EXPLORE', [['homes','Find a home'],['journey','Homebuying guide'],['areas','Neighbourhoods'],['market','Markets & news']]],
     ['GROW YOUR KNOWLEDGE', [['learn','Learn'],['advisor','AI Copilot']]],
     ['ACCOUNT', [['profile','My profile'],['settings','Settings']]]
   ];

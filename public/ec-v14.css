@@ -1,7 +1,8 @@
 /* EquityClimb v14 — compact Budget / thoughtful navigation / integrated Homes portal. */
 :root{--ec14-bronze:var(--accent,#c9a96a)}
 /* Sidebar */
-.side{display:flex;flex-direction:column;gap:0;overflow-y:auto;scrollbar-width:thin}
+/* The base stylesheet owns mobile sidebar visibility. Avoid overriding its display:none. */
+.side{flex-direction:column;gap:0;overflow-y:auto;scrollbar-width:thin}
 .ec14-logo{flex-shrink:0;margin-bottom:12px!important}
 .ec14-sidebar{display:grid;gap:17px;align-content:start;min-height:0;padding:1px 6px 12px}
 .ec14-nav-section{display:grid;gap:3px;min-width:0}
@@ -63,39 +64,10 @@
 @media(prefers-reduced-motion:reduce){.ec14-nav-item{transition:none}}
 
 .ec14-more-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.ec14-more-section{padding:18px}.ec14-more-section h2{font-size:11px;color:var(--mute);letter-spacing:.12em;margin:0 0 9px}.ec14-more-section button{width:100%;display:flex;align-items:center;gap:11px;border:0;background:transparent;border-bottom:1px solid var(--line);color:var(--ink2);padding:12px 2px;text-align:left;cursor:pointer;font-size:13px}.ec14-more-section button:last-of-type{border-bottom:0}.ec14-more-section button svg{width:17px;height:17px;flex:none;stroke:var(--accent)}.ec14-more-section button span{flex:1}.ec14-more-section button b{color:var(--mute);font-size:17px}@media(max-width:720px){.ec14-more-grid{grid-template-columns:1fr}}
-/* v14.1 fix — keep Prime rate card clean at the bottom of the sidebar */
-.side{
-  overflow:hidden;
-}
 
-.ec14-sidebar{
-  flex:1 1 auto;
-  min-height:0;
-  overflow-y:auto;
-  padding:1px 6px 12px;
-}
-
-.side .grow{
-  display:none;
-}
-
-.side .ratechip{
-  flex-shrink:0;
-  margin:14px 6px 0;
-  padding:12px 12px;
-  border:1px solid var(--line);
-  border-radius:12px;
-  background:var(--surface);
-  font-size:11.5px;
-  line-height:1.35;
-  box-shadow:none;
-}
-
-.side .ratechip b{
-  display:block;
-  color:var(--ink);
-  font-size:16px;
-  font-weight:600;
-  margin-top:4px;
-  line-height:1.15;
-}
+/* v14.1 sidebar footer fix carried into v15 from live user's patch */
+.side{overflow:hidden;}
+.ec14-sidebar{flex:1 1 auto;min-height:0;overflow-y:auto;padding:1px 6px 12px;}
+.side .grow{display:none;}
+.side .ratechip{flex-shrink:0;margin:14px 6px 0;padding:12px;border:1px solid var(--line);border-radius:12px;background:var(--surface);font-size:11.5px;line-height:1.35;box-shadow:none;}
+.side .ratechip b{display:block;color:var(--ink);font-size:16px;font-weight:600;margin-top:4px;line-height:1.15;}

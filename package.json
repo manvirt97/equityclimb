@@ -1,9 +1,9 @@
 {
   "name": "equityclimb",
-  "version": "14.0.0",
+  "version": "15.1.0",
   "private": true,
   "type": "module",
   "description": "Cloudflare Pages PWA; no production npm build step",
-  "scripts": { "test": "node --test tests/*.test.mjs", "syntax": "node --check public/ec-v13.js && node --check public/ec-v14.js && node --check functions/api/homes.js" },
+  "scripts": { "test": "node --test tests/*.test.mjs", "syntax": "node --check public/ec-v13.js && node --check public/ec-v14.js && node --check public/ec-v15.js && node --check functions/api/homes.js && node --check functions/api/ai-router.js" },
   "engines": { "node": ">=20" }
 }

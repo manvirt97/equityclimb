@@ -1,0 +1,110 @@
+/* EquityClimb v15 — premium, accessible design and guided homebuying. */
+:root{--ec15-ring:rgba(181,140,67,.20);--ec15-green:#1f977b}
+[data-theme=light]{--bg:#f6f7f7;--surface:#ffffff;--surface2:#f0f3f5;--line:#e5e9ec;--line2:#d7dfe3;--ink:#152130;--ink2:#455365;--mute:#687789;--accent:#987239;--shadow:0 5px 25px rgba(35,48,66,.045)}
+[data-theme=dark]{--bg:#0e141d;--surface:#151e29;--surface2:#202c39;--line:#293848;--line2:#3c4a59;--ink:#eff2f5;--ink2:#bac5cf;--mute:#98a5b3;--accent:#d6b477;--shadow:0 14px 38px rgba(0,0,0,.12)}
+body{background:var(--bg)}
+.app{grid-template-columns:245px minmax(0,1fr)}
+.side{background:var(--surface);border-right:1px solid var(--line);padding:23px 13px 14px;overflow:hidden}
+.ec14-logo{padding:8px 12px 18px;margin-bottom:3px!important;font-weight:550;letter-spacing:-.015em}
+.ec14-sidebar{gap:13px!important;padding:0 5px 13px!important;overscroll-behavior:contain;scrollbar-width:thin}
+.ec14-nav-section{gap:1px!important}
+.ec14-nav-heading{font-size:9.5px;letter-spacing:.15em;padding:12px 12px 6px}
+.ec14-nav-item{min-height:39px;gap:11px;font-size:12.5px;line-height:1.45;border-radius:9px;padding:8px 11px}
+.ec14-nav-item svg{width:16px;height:16px}
+.side .ratechip{margin:10px 7px 0!important;padding:13px 14px!important;background:linear-gradient(135deg,var(--surface2),var(--surface))!important;border-color:var(--line2)!important;border-radius:12px;box-shadow:none}
+.side .ratechip b{font-size:19px;letter-spacing:-.025em;margin-top:4px}
+main{max-width:1460px;padding:32px clamp(19px,3.5vw,55px) 105px}
+.card{border-color:var(--line);box-shadow:var(--shadow);border-radius:16px}
+h1{font-size:clamp(30px,3vw,41px);letter-spacing:-.035em}
+.eyebrow{letter-spacing:.14em;font-size:10px}
+.lede{font-size:14px;line-height:1.6;margin-bottom:24px}
+.card.kpi{min-width:0;transition:box-shadow .2s}
+.kpi .v{font-size:clamp(21px,2.1vw,30px)}
+.btn{border-radius:10px;transition:filter .15s,transform .15s}
+.btn:hover:not(:disabled){transform:translateY(-1px)}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent)!important;outline-offset:2px}
+.ec15-eyebrow{color:var(--accent);font-size:10px;letter-spacing:.15em;font-weight:800;margin-bottom:8px}
+.ec15-home-path{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;padding:20px 25px;border-radius:16px;margin:0 0 20px;background:linear-gradient(120deg,var(--surface),var(--surface2));border:1px solid var(--line2)}
+.ec15-home-path h2{font:500 24px/1.2 var(--serif);letter-spacing:-.02em;margin:0 0 4px}
+.ec15-home-path p{color:var(--ink2);max-width:560px;font-size:12.5px;margin:0}
+.ec15-home-path .btn{white-space:normal}
+.ec15-guide{display:grid;gap:16px}
+.ec15-journey-hero{border:1px solid #2b3c4a;border-radius:21px;background:radial-gradient(circle at 95% 20%,#39454e,transparent 35%),linear-gradient(115deg,#14202c,#1b2b36);color:#f4f4f2;padding:28px;display:flex;justify-content:space-between;align-items:center;gap:22px}
+.ec15-journey-hero h2{font:500 clamp(29px,4vw,41px)/1.09 var(--serif);letter-spacing:-.03em;color:#f8f4ea;margin:0 0 8px}
+.ec15-journey-hero p{font-size:13px;line-height:1.6;color:#c3cbd2;max-width:580px;margin:0}
+.ec15-progress-card{flex:0 0 172px;background:rgba(255,255,255,.06);padding:19px;border:1px solid rgba(255,255,255,.16);border-radius:16px}
+.ec15-progress-card strong{display:block;font-size:39px;line-height:1;color:#f4eedf;letter-spacing:-.035em}
+.ec15-progress-card small{font-size:16px;color:#d4c2a3}
+.ec15-progress-card span{display:block;color:#ced4db;margin-top:8px;font-size:11px}
+.ec15-track{margin-top:13px;height:7px;background:#425364;border-radius:20px;overflow:hidden}
+.ec15-track i{display:block;height:100%;background:#d6b477;border-radius:20px}
+.ec15-context{padding:18px 22px;display:flex;gap:18px;align-items:center;flex-wrap:wrap;box-shadow:none}
+.ec15-context label{margin:0;display:grid;gap:2px;flex:1;min-width:190px}
+.ec15-context label b{color:var(--ink);font-size:14px}
+.ec15-context label span{font-size:11px;color:var(--mute);font-weight:400}
+.ec15-context select{flex:0 1 210px;background:var(--surface2)}
+.ec15-context p{font-size:11px;color:var(--ink2);margin:0;flex:1 1 220px}
+.ec15-guide-layout{display:grid;grid-template-columns:minmax(230px,.7fr) minmax(0,1.5fr);gap:16px;align-items:start}
+.ec15-stages{display:grid;gap:8px}
+.ec15-stage{appearance:none;background:var(--surface);border:1px solid var(--line);border-radius:13px;text-align:left;display:flex;align-items:center;gap:12px;padding:13px;cursor:pointer;color:var(--ink2);min-width:0}
+.ec15-stage.active{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--surface));color:var(--ink)}
+.ec15-stage-number{height:32px;width:32px;flex-shrink:0;display:grid;place-items:center;background:var(--surface2);border-radius:9px;font-weight:750;color:var(--accent)}
+.ec15-stage b{font-size:12px;display:block;line-height:1.3}.ec15-stage small{font-size:10px;color:var(--mute)}
+.ec15-stage-panel{padding:28px;min-width:0}
+.ec15-stage-panel h2{font:500 clamp(23px,3vw,33px)/1.12 var(--serif);letter-spacing:-.025em;margin:0}
+.ec15-intro{font-size:13px;color:var(--ink2);line-height:1.6;margin:9px 0 19px}
+.ec15-task-list{display:grid;gap:10px}
+.ec15-task{display:flex;align-items:center;gap:12px;padding:13px 12px;border:1px solid var(--line);border-radius:11px;min-width:0}
+.ec15-task.complete{background:color-mix(in srgb,var(--pos) 6%,var(--surface))}
+.ec15-task-check{margin:0;display:flex;gap:10px;align-items:center;flex:1;color:var(--ink);min-width:0;font-size:12.5px;cursor:pointer;font-weight:500}
+.ec15-task-check input{width:18px;height:18px;accent-color:var(--accent);flex-shrink:0}
+.ec15-task-check span{overflow-wrap:anywhere}
+.ec15-mini{background:none;border:0;color:var(--accent);font-size:11px;font-weight:750;cursor:pointer;white-space:nowrap}
+.ec15-stage-actions{display:flex;justify-content:space-between;gap:12px;margin-top:23px}
+.ec15-guide-bottom{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:24px;flex-wrap:wrap}
+.ec15-guide-bottom h2{font-size:19px}.ec15-guide-bottom p{font-size:12.5px;color:var(--ink2);max-width:570px;margin:4px 0 0}
+.ec15-quick-actions{display:flex;gap:9px;flex-wrap:wrap}.ec15-legal{color:var(--mute);font-size:11px;line-height:1.55;margin:0}
+.ec15-model-picker{min-width:0;flex:1 1 280px}
+.ec15-model-picker label{font-size:12px;font-weight:700;margin:0 0 6px;color:var(--ink)}
+.ec15-model-picker select{max-width:100%;background:var(--surface2)}
+.ec15-model-note{margin:6px 0 0;font-size:11px;color:var(--ink2)}
+.ec15-model-help{max-width:650px;font-size:10.5px;line-height:1.5;color:var(--mute);margin-top:8px}
+/* Cards and guides don't lose keyboard focus or overflow at smaller sizes. */
+@media(max-width:1050px){.app{grid-template-columns:225px minmax(0,1fr)}.ec15-guide-layout{grid-template-columns:1fr}.ec15-stages{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:920px){.app{grid-template-columns:1fr}.side{display:none}main{padding:22px 16px 100px}.ec15-guide-layout{grid-template-columns:1fr}}
+@media(max-width:680px){.ec15-stages{grid-template-columns:1fr}.ec15-journey-hero{flex-direction:column;align-items:stretch;padding:22px}.ec15-progress-card{flex:auto}.ec15-context{align-items:stretch}.ec15-context select{flex:1 1 100%}.ec15-stage-panel{padding:20px}.ec15-task{align-items:start;flex-direction:column}.ec15-mini{align-self:flex-end}.ec15-home-path{padding:19px}.ec15-home-path .btn{width:100%;justify-content:center}.ec15-quick-actions{width:100%}.ec15-quick-actions>.btn{flex:1}}
+@media(prefers-reduced-motion:reduce){.btn,.card.kpi{transition:none}}
+
+/* v15.1 — Mobile-first layout hotfix.
+   v14 accidentally reapplied display:flex to the desktop sidebar *after*
+   styles.css had hidden it at <=920px. Keep the desktop sidebar out of
+   the mobile viewport; the accessible bottom tabs and More screen navigate. */
+@media (max-width:920px){
+  html,body{max-width:100%;overflow-x:clip}
+  .app{display:block;min-width:0;min-height:100vh;min-height:100dvh}
+  #side.side{display:none!important;visibility:hidden!important}
+  #view{display:block;min-width:0;width:100%;max-width:none;
+    padding:24px 16px calc(105px + env(safe-area-inset-bottom))}
+  #tabbar.tabbar{display:flex;align-items:stretch;justify-content:space-around;
+    gap:0;min-height:67px;z-index:90;padding:6px max(5px,env(safe-area-inset-left)) calc(7px + env(safe-area-inset-bottom)) max(5px,env(safe-area-inset-right));
+    background:color-mix(in srgb,var(--surface) 96%,transparent);
+    border-top:1px solid var(--line);box-shadow:0 -7px 26px rgba(0,0,0,.08)}
+  #tabbar .nav{display:flex;flex:1 1 0;min-width:0;min-height:50px;max-width:none;
+    padding:6px 1px;gap:3px;border-radius:9px;font-size:10.5px;line-height:1.2;
+    align-items:center;justify-content:center;flex-direction:column;text-align:center}
+  #tabbar .nav svg{width:19px;height:19px;flex:none}
+  #tabbar .nav span{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  #tabbar .nav.on{color:var(--accent);background:color-mix(in srgb,var(--accent) 9%,transparent)}
+  #tabbar .nav:focus-visible{outline-offset:-2px}
+  /* Copilot is available in the bottom bar; news setup lives under Markets. */
+  #ec8-ask,.ec-news-key-button{display:none!important}
+  #view .grid,#view .card,#view .ec13-shell,#view .ec15-guide{min-width:0;max-width:100%}
+  #view img,#view svg.chart,#view canvas{max-width:100%}
+  #view input:not([type=checkbox]):not([type=radio]),#view select,#view textarea{font-size:16px}
+}
+@media (max-width:390px){
+  #view{padding:19px 12px calc(104px + env(safe-area-inset-bottom))}
+  #tabbar .nav{font-size:10px;gap:3px}
+  #tabbar .nav svg{width:18px;height:18px}
+  .ec15-home-path,.ec13-home-lead,.card{overflow-wrap:anywhere}
+}

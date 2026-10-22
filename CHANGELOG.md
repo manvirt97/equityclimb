@@ -32,3 +32,19 @@
 - No real-time alert automation, banking connector or full nationwide market-statistics ingestion is included in this release.
 - Before significant traffic, upgrade map tile hosting and monitor provider charges and abuse.
 - A fuller refactor of the many v6–v12 screen overrides remains advisable as a separate stabilization project.
+
+## v15 (2026-10-22)
+- Premium UI adjustment to light and dark themes, with rate-chip footer fix included.
+- New province-aware Homebuying Guide (6 stages, 18 checkable educational tasks).
+- Free-only AI Auto routing with 3 Cloudflare modes, safe usage limits, explicit optional OpenAI/Claude integrations.
+- Owner-only AI model lifecycle audit, without automatic untested replacement.
+- Source-neutral schema for future licensed property-feed integrations; no new live MLS feed enabled.
+- Added AI router / listing schema safety tests and v15 installation documentation.
+
+## v15.1 (2026-10-22) — mobile navigation hotfix
+- Repaired CSS cascade conflict that caused the desktop sidebar to appear on mobile and hide the real page.
+- Kept the six-tab bottom navigation with safe-area spacing and full-width content for screens 920px and narrower.
+- Removed redundant floating AI/news controls from the mobile viewport (Copilot remains in its tab; news setup through Market).
+- Updated stylesheet and service-worker cache versions for installed web app refreshes.
+- Added three regression tests; 19 tests pass and responsive Chromium viewport checks pass.
+- No live MLS feed or paid AI provider is enabled by the update.

@@ -1,50 +1,39 @@
-# EquityClimb v14 — very simple GitHub & Cloudflare update
+# Install EquityClimb v15.1 (complete v15 + mobile fix)
 
-## What v14 fixes
+For `manvirt97/equityclimb` → Cloudflare Pages `equityclimb`.
 
-- **Budget**: Two independent card columns eliminate large empty holes; the five cards alternate left/right in number order at wide desktop sizes, and return to true 1-2-3-4-5 order in one column on narrow screens. Existing calculations and values remain the same.
-- **Navigation**: Sidebar grouped under Your Money, Explore, Grow Your Knowledge, and Account. Homes is easy to find; Learn and Copilot sit together.
-- **Homes**: Smaller hero, city shortcuts, bathrooms filter, saved search criteria, location map (not fake listing pins), existing property shortlist and purchase analysis.
-- **Backend**: Adds bathrooms filtering to the optional licensed Repliers adapter. The live feed is deliberately **OFF**.
+## Before uploading
 
-## Install directly to your existing GitHub `main` branch
+1. On GitHub, open your existing repository and use **Code → Download ZIP** to back up the currently deployed code.
+2. In the currently deployed app, use **Settings → Export Backup**, if you have saved financial data. Keep that JSON private.
+3. Download **EquityClimb_v15_1_Mobile_Fixed_Complete.zip** and unzip it on your Mac. Open the **EquityClimb** folder containing `functions/`, `public/`, `tests/`, and `wrangler.toml`.
 
-1. In the app Settings, export a data backup if you have entered personal numbers. Never upload this export to GitHub.
-2. Open https://github.com/manvirt97/equityclimb, press **Code → Download ZIP**, and save your working code backup. Git history also preserves earlier commits.
-3. Download **EquityClimb_v14_Complete.zip** and double-click it on your Mac to extract.
-4. Open the extracted **EquityClimb** folder. You should see **functions**, **public**, **tests**, **wrangler.toml**, etc. Upload the **CONTENTS** of this folder, not the enclosing folder or ZIP.
-5. Go to your repository on branch **main** → **Add file / + → Upload files**. Drag all content from the extracted folder. The upload paths should read `/functions/api/homes.js`, `/public/ec-v14.js`, `/public/ec-v14.css`, `/public/index.html`, `/public/ec-v13.js`.
-6. Commit message: **EquityClimb v14 — Budget, Navigation & Homes Explorer**. Select **Commit directly to main** and save.
-7. Go to Cloudflare → Workers & Pages → **equityclimb** → **Deployments**. The production deployment should start automatically. No new keys or build settings are required.
-8. Visit https://equityclimb.pages.dev, refresh the browser, and confirm **Budget**, **Homes**, **Learn**, **Copilot**, **Home**, and **Settings** work. On Homes, click **Save this search**, change city and try the **Show interactive map** control.
+## Upload
 
-## Leave Cloudflare as-is
+1. On GitHub, open `https://github.com/manvirt97/equityclimb`.
+2. Select the branch **main** if you intend to deploy directly to production. This triggers an automatic Cloudflare production deployment.
+3. Click **+ → Upload files**, then from Finder select **everything *inside* the extracted EquityClimb folder** (Command-A) and drag the selection to GitHub. **Do not** upload the ZIP itself or an extra enclosing `EquityClimb/` directory.
+4. Verify the upload list contains `public/ec-v15.css`, `public/ec-v14.css`, `public/ec-v15.js`, `public/index.html`, `public/sw.js`, and `functions/api/ai-router.js`. The paths may appear with `/` rather than folder icons; that is normal.
+5. Enter commit message: `EquityClimb v15.1 - Fix mobile layout and launch v15`.
+6. Choose **Commit directly to main** only after the backup and file-path check. Click **Commit changes**.
 
-- Repository: `manvirt97/equityclimb`
-- Production branch: `main`
-- Build command: empty
-- Output directory: `public`
-- Preserve existing D1 `DB`, Workers AI `AI`, Firebase configuration, and `SYNC_SECRET`.
-- `HOMES_PUBLIC_ENABLED = "off"` stays **off**. You do **not** need a listing API key to use the planner, map, saved search criteria, or manual property comparisons.
+## Cloudflare
 
-## MLS listing rights: important before promising Realtor.ca / Zolo-style inventory
+1. Open the Cloudflare dashboard → **Workers & Pages → equityclimb → Deployments**.
+2. Look for the new commit and a **successful Production** deployment.
+3. No new binding is needed for the default free AI route if your existing `AI` and `DB` bindings are configured. The optional OpenAI and Claude credentials remain unset. Leave `HOMES_PUBLIC_ENABLED = "off"` without appropriate MLS authorization.
 
-The Repliers API adapter supplied in v13 is only usable when the subscriber and website meet Repliers' **specific** MLS eligibility and approval rules. Repliers has stated that independent vendors generally cannot build their *own* third-party consumer websites on an agent's licensed feed.
+## Test on your phone (essential)
 
-For an independent EquityClimb property-search business, first explore CREA's **REALTOR.ca DDF Real Estate Advertising Website** program: https://www.realtor.ca/ddf/real-estate-advertising-websites. Approval is not guaranteed. Its agreement may require advertising-only use, routing inquiries to listing agents, attribution, data refresh, removal, etc. No DDF integration is included yet; it would be a **different backend implementation** once approval, terms and feed access are known.
+1. Open `https://equityclimb.pages.dev` in Safari or Chrome on your iPhone.
+2. You should **not** see the desktop navigation list filling the screen. Instead, see the actual dashboard and a six-item bottom bar (Home, Budget, Debt, Homes, Copilot, More).
+3. Tap **Budget**, scroll through cards 1–5, edit a number and verify the figures update. Tap **Homes**, **Copilot**, **Home** and **More**. Inside **More**, open **Homebuying Guide**.
+4. Confirm all pages have readable content and no horizontal scrolling. Change screen orientation and retest.
+5. If you installed the app to your Home Screen, fully close it and reopen while online after deployment; if the old version persists, test the Safari website directly first. Because the service-worker cache version changed, the installed app should pick up the fix once its update activates.
+6. Also test the desktop site and confirm that the left sidebar and Prime-rate footer still work.
 
-Don't scrape MLS portals, copy listing photos or use sample feed listings as though they are real.
+If Cloudflare deployment fails, open **Deployments → failed deployment → build logs**. Do not randomly change variables or delete folders. Restore the last successful deployment via Cloudflare's rollback action, and revert the new GitHub commit if necessary (a Cloudflare rollback alone does not revert GitHub or user data).
 
-## Quick problem solving
+## What this update does *not* do
 
-- New section missing: confirm `/public/ec-v14.js`, `/public/ec-v14.css` and `/public/index.html` were committed under the correct folders.
-- Old layout: use a hard refresh (Mac Chrome: Command + Shift + R), or open a private browser window. Service worker cache key was bumped to `eq-v14`.
-- Deployment fails: open Cloudflare → Deployments → Failed deployment → Build logs. Existing Cloudflare bindings are unchanged by this package.
-- No listing feed: expected; live listings are *not* included.
-- Map won't load: it uses a third-party map library and public tiles for small-scale testing; your budgets and saved homes still work.
-- Rollback: Use Cloudflare's Deployments list to roll back to your last known successful production deployment; **also revert the v14 GitHub commit** before deploying future changes. This does not restore deleted user data or database changes.
-
-## Testing completed
-
-- JavaScript syntax and automated calculation/API tests ran locally.
-- Interactive browser navigation couldn't be confirmed in the working environment (the browser blocks local file/localhost pages). Therefore the live site still needs user acceptance testing before broad promotion.
+It does not activate licensed MLS data, provide unlimited free paid AI models, or replace real-world legal and lender requirements for buying property.

@@ -30,3 +30,11 @@ SIGNIN_PROVIDERS = ""
 # Homes is disabled by default until you have written live MLS display authorization.
 # Set to "on" only after licensing and provider approval; add REPLIERS_API_KEY as Cloudflare Secret.
 HOMES_PUBLIC_ENABLED = "off"
+
+# v15 AI routing: default free-only, with an IP-derived daily request allowance.
+# Keep paid providers OFF unless you explicitly accept API costs.
+ENABLE_PAID_AI = "off"
+AI_DAILY_LIMIT = "20"
+# To opt in later: add OPENAI_API_KEY or ANTHROPIC_API_KEY as Cloudflare secrets,
+# choose pinned, tested OPENAI_MODEL_{FAST,BALANCED,ADVANCED} or
+# ANTHROPIC_MODEL_{FAST,BALANCED,ADVANCED} identifiers, then change flag to on.
