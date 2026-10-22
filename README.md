@@ -1,3 +1,5 @@
+> **Current release: v15.3.** See `UPGRADE_V15_3.md` for deployment instructions and `V15_3_RELEASE_NOTES.md` for scope and limitations.
+
 # EquityClimb v15.1 — mobile-fixed v15
 
 A Canadian financial literacy and homebuying planning web app. Deploy through GitHub → Cloudflare Pages; static build output directory `public`, no build command.

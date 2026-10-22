@@ -1,0 +1,35 @@
+/* EquityClimb v15.3 — quiet, scannable Home. Existing charts and calculations preserved. */
+.ec153-section-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;margin:23px 0 11px;flex-wrap:wrap}
+.ec153-section-heading h2{font-size:20px;font-weight:700;margin:3px 0 0;letter-spacing:-.035em;color:var(--ink)}
+.ec153-eyebrow{display:block;color:var(--accent);font-size:10px;font-weight:800;letter-spacing:.12em}
+.ec153-heading-help{font-size:11px;color:var(--mute)}
+.ec153-primary-metrics,.ec153-secondary-metrics{margin:0!important}
+.ec153-primary-metrics>.card{min-width:0}
+.ec153-primary-metrics .v{font-size:clamp(22px,2.3vw,29px);overflow-wrap:anywhere}
+.ec153-secondary-metrics .card{padding:16px 17px;min-width:0}
+.ec153-secondary-metrics .v{font-size:clamp(16px,1.9vw,22px)}
+.ec153-primary-metrics+.sp,.ec153-secondary-metrics+.sp{height:5px}
+.ec153-market{box-shadow:none}
+.ec153-details{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin:14px 0 0;overflow:hidden}
+.ec153-details>summary{display:flex;justify-content:space-between;align-items:center;gap:12px;cursor:pointer;padding:16px 19px;list-style:none;color:var(--ink)}
+.ec153-details>summary::-webkit-details-marker{display:none}
+.ec153-details>summary strong{font-size:14px}
+.ec153-details>summary span{font-size:12px;color:var(--mute);line-height:1.45}
+.ec153-details>summary:after{content:'⌄';color:var(--accent);font-size:22px;line-height:1}
+.ec153-details[open]>summary:after{content:'⌃'}
+.ec153-details[open]>summary{border-bottom:1px solid var(--line)}
+.ec153-insights>.g21{margin:14px;}
+.ec153-next{margin:22px 0 5px}
+.ec153-next-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;align-items:stretch}
+.ec153-next-grid>.ec15-home-path,.ec153-next-grid>.ec13-home-lead{margin:0!important;min-width:0;min-height:0;border-radius:16px;box-shadow:none;display:flex;flex-direction:column;gap:12px;align-items:flex-start;justify-content:space-between;padding:21px}
+.ec153-next-grid .ec15-home-path h2,.ec153-next-grid .ec13-home-lead h2{font-size:clamp(20px,2.2vw,26px);line-height:1.2}
+.ec153-next-grid .ec15-home-path p,.ec153-next-grid .ec13-home-lead p{font-size:12px;line-height:1.55}
+.ec153-next-grid .ec15-home-path .btn,.ec153-next-grid .ec13-home-actions .btn{min-width:0;white-space:normal}
+.ec153-next-grid .ec13-home-actions{display:flex;gap:8px;flex-wrap:wrap;width:100%}
+.ec153-next-grid .ec13-home-actions button{padding:9px 12px;font-size:12px}
+.ec153-activity-body{padding:14px;display:grid;gap:14px}
+.ec153-activity-body .ec13-home-cards,.ec153-activity-body .ec13-week,.ec153-activity-body .ec-top{margin:0!important}
+.ec153-activity-body .ec13-week{box-shadow:none}
+.ec153-activity-body .ec13-home-cards .card{box-shadow:none}
+@media (max-width:920px){.ec153-primary-metrics,.ec153-secondary-metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:10px!important}.ec153-next-grid{grid-template-columns:1fr}.ec153-section-heading{margin-top:17px}.ec153-details>summary{padding:14px}.ec153-details>summary span{max-width:54%;text-align:right}.ec153-primary-metrics .card{padding:14px 13px}.ec153-primary-metrics .v{font-size:clamp(19px,5vw,26px)}.ec153-secondary-metrics .card{padding:13px}.ec153-secondary-metrics .v{font-size:clamp(16px,4vw,21px)}.ec153-insights>.g21{margin:10px}.ec153-next-grid>.ec15-home-path,.ec153-next-grid>.ec13-home-lead{padding:19px}}
+@media (max-width:350px){.ec153-primary-metrics,.ec153-secondary-metrics{grid-template-columns:1fr!important}}
