@@ -981,6 +981,8 @@
   const MAIN = [['home', 'Home', 'home'], ['budget', 'Budget', 'wallet'], ['debt', 'Debt & Mortgage', 'debt'], ['wealth', 'Investing', 'market'], ['goals', 'Goals', 'goal'], ['advisor', 'Copilot', 'ai']];
   const EXTRA = [['profile', 'My profile', 'user'], ['market', 'Market', 'market'], ['areas', 'Neighbourhoods', 'map'], ['settings', 'Settings', 'gear']];
   const MOBILE = [['home', 'Home', 'home'], ['budget', 'Budget', 'wallet'], ['debt', 'Debt', 'debt'], ['wealth', 'Invest', 'market'], ['advisor', 'Copilot', 'ai'], ['more', 'More', 'more']];
+  // Extension-safe navigation slots; modified in place by ec-v13 without rebuilding the existing shell.
+  window.EC_NAV = { MAIN, EXTRA, MOBILE };
   const LEGACY = { overview: 'home', plan: 'budget', numbers: 'profile' };
   V.more = () => `${head('More', 'Everything else')}<div class="list card">${[['goals', 'Goals & home buying', 'goal'], ...EXTRA].map(([k, l, i]) => `<div class="it" style="cursor:pointer;align-items:center" onclick="go('${k}')"><span class="moreic">${ic(i)}</span><h3 style="flex:1">${l}</h3><span class="mute">›</span></div>`).join('')}</div>`;
   const oldGo = go;

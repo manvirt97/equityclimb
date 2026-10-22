@@ -26,3 +26,7 @@ PHONE_SIGNIN = "off"
 # Extra sign-in buttons. Add a name here ONLY after switching it on in Firebase -> Authentication -> Sign-in method.
 # Choices: microsoft, yahoo, facebook, github, apple, twitter   (example: "microsoft,yahoo")
 SIGNIN_PROVIDERS = ""
+
+# Homes is disabled by default until you have written live MLS display authorization.
+# Set to "on" only after licensing and provider approval; add REPLIERS_API_KEY as Cloudflare Secret.
+HOMES_PUBLIC_ENABLED = "off"
