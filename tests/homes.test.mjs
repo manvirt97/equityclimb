@@ -19,9 +19,10 @@ test('enabled feed sends a validated server-side request with secret header',asy
    {mlsNumber:'AB123',listPrice:750000,address:{city:'Calgary',streetNumber:'10',streetName:'Main'},details:{numBedrooms:3,numBathrooms:2,propertyType:'Detached'},images:[]},
    {mlsNumber:'HIDDEN',listPrice:500000,displayInternetEntireListing:'N'}]}),{status:200});};
  try {
-  const r=await onRequestGet({request:req('?city=Calgary&maxPrice=900000&beds=3'),env:{REPLIERS_API_KEY:'testsecret',HOMES_PUBLIC_ENABLED:'on'}});
+  const r=await onRequestGet({request:req('?city=Calgary&maxPrice=900000&beds=3&baths=2'),env:{REPLIERS_API_KEY:'testsecret',HOMES_PUBLIC_ENABLED:'on'}});
   const j=await r.json();assert.equal(j.enabled,true);assert.equal(j.items.length,1);assert.equal(j.items[0].id,'AB123');
   assert.equal(new URL(called.url).searchParams.get('maxPrice'),'900000');
+  assert.equal(new URL(called.url).searchParams.get('minBaths'),'2');
   assert.equal(called.opts.headers['REPLIERS-API-KEY'],'testsecret');
   assert.ok(!JSON.stringify(j).includes('testsecret'));
  } finally{globalThis.fetch=old;}

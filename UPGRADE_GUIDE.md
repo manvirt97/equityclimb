@@ -1,56 +1,50 @@
-# EquityClimb v13: Simple Deployment Guide
+# EquityClimb v14 — very simple GitHub & Cloudflare update
 
-## Step 1 — Back up the existing version
+## What v14 fixes
 
-Open the current EquityClimb app → Settings → Export backup. Download and save the JSON. In GitHub, download a copy of the current source repository before replacing any code. If you rely on live user cloud sync, do not delete or change the existing D1 database.
+- **Budget**: Two independent card columns eliminate large empty holes; the five cards alternate left/right in number order at wide desktop sizes, and return to true 1-2-3-4-5 order in one column on narrow screens. Existing calculations and values remain the same.
+- **Navigation**: Sidebar grouped under Your Money, Explore, Grow Your Knowledge, and Account. Homes is easy to find; Learn and Copilot sit together.
+- **Homes**: Smaller hero, city shortcuts, bathrooms filter, saved search criteria, location map (not fake listing pins), existing property shortlist and purchase analysis.
+- **Backend**: Adds bathrooms filtering to the optional licensed Repliers adapter. The live feed is deliberately **OFF**.
 
-## Step 2 — Upload all project files
+## Install directly to your existing GitHub `main` branch
 
-Open the ZIP and find the `EquityClimb/` folder. **Upload the files and folders INSIDE it to the root of your GitHub repository**, preserving the `public/` and `functions/` folders exactly. Replace old files when matching names exist. Do not upload the ZIP itself as the only repository file.
+1. In the app Settings, export a data backup if you have entered personal numbers. Never upload this export to GitHub.
+2. Open https://github.com/manvirt97/equityclimb, press **Code → Download ZIP**, and save your working code backup. Git history also preserves earlier commits.
+3. Download **EquityClimb_v14_Complete.zip** and double-click it on your Mac to extract.
+4. Open the extracted **EquityClimb** folder. You should see **functions**, **public**, **tests**, **wrangler.toml**, etc. Upload the **CONTENTS** of this folder, not the enclosing folder or ZIP.
+5. Go to your repository on branch **main** → **Add file / + → Upload files**. Drag all content from the extracted folder. The upload paths should read `/functions/api/homes.js`, `/public/ec-v14.js`, `/public/ec-v14.css`, `/public/index.html`, `/public/ec-v13.js`.
+6. Commit message: **EquityClimb v14 — Budget, Navigation & Homes Explorer**. Select **Commit directly to main** and save.
+7. Go to Cloudflare → Workers & Pages → **equityclimb** → **Deployments**. The production deployment should start automatically. No new keys or build settings are required.
+8. Visit https://equityclimb.pages.dev, refresh the browser, and confirm **Budget**, **Homes**, **Learn**, **Copilot**, **Home**, and **Settings** work. On Homes, click **Save this search**, change city and try the **Show interactive map** control.
 
-Recommended: use a new branch or a fork to trigger a Cloudflare preview deployment first. Avoid changing your live site until you have tested the preview.
+## Leave Cloudflare as-is
 
-## Step 3 — Keep your existing Cloudflare settings
+- Repository: `manvirt97/equityclimb`
+- Production branch: `main`
+- Build command: empty
+- Output directory: `public`
+- Preserve existing D1 `DB`, Workers AI `AI`, Firebase configuration, and `SYNC_SECRET`.
+- `HOMES_PUBLIC_ENABLED = "off"` stays **off**. You do **not** need a listing API key to use the planner, map, saved search criteria, or manual property comparisons.
 
-- Cloudflare → Workers & Pages → EquityClimb → Settings.
-- Build output directory: `public`.
-- Build command: **empty**.
-- Worker AI binding name: `AI`.
-- D1 binding name: `DB` — retain its existing database (do not create a replacement).
-- If using cross-device login, preserve existing sync secrets and Firebase settings.
+## MLS listing rights: important before promising Realtor.ca / Zolo-style inventory
 
-A newly added variable in `wrangler.toml` is `HOMES_PUBLIC_ENABLED = "off"`. Leave this off at first. This allows the Homes page to launch safely without claiming the app has live MLS inventory.
+The Repliers API adapter supplied in v13 is only usable when the subscriber and website meet Repliers' **specific** MLS eligibility and approval rules. Repliers has stated that independent vendors generally cannot build their *own* third-party consumer websites on an agent's licensed feed.
 
-## Step 4 — Test the preview
+For an independent EquityClimb property-search business, first explore CREA's **REALTOR.ca DDF Real Estate Advertising Website** program: https://www.realtor.ca/ddf/real-estate-advertising-websites. Approval is not guaranteed. Its agreement may require advertising-only use, routing inquiries to listing agents, attribution, data refresh, removal, etc. No DDF integration is included yet; it would be a **different backend implementation** once approval, terms and feed access are known.
 
-- [ ] Home shows the new next step and weekly actions, without losing your previous cards.
-- [ ] Homes tab appears in the main menu (and on the mobile bottom tab bar).
-- [ ] Homes → Discover lets you choose a city, budget and minimum bedrooms.
-- [ ] Without a licensed feed, the page says **live feed pending**, rather than inventing listings.
-- [ ] REALTOR.ca / Zolo buttons open official websites in new tabs.
-- [ ] Homes → My shortlist → add a manually entered home; save and delete work.
-- [ ] Analyze costs opens the Decision Lab and fills the purchase price.
-- [ ] Changing the mortgage rate updates estimated monthly totals.
-- [ ] Existing Budget, Debt & Mortgage, Goals, Investing, Market, Learn, Copilot, sign-in and backup functions still work.
-- [ ] On mobile, fields don't overflow and the home layout stacks vertically.
+Don't scrape MLS portals, copy listing photos or use sample feed listings as though they are real.
 
-## Step 5 — Enable actual MLS listings later (optional)
+## Quick problem solving
 
-Get written permission from the appropriate listing-data vendor and confirm licence rights for your actual public deployment domain. Choose a plan that includes the Canadian markets you wish to display. Then:
+- New section missing: confirm `/public/ec-v14.js`, `/public/ec-v14.css` and `/public/index.html` were committed under the correct folders.
+- Old layout: use a hard refresh (Mac Chrome: Command + Shift + R), or open a private browser window. Service worker cache key was bumped to `eq-v14`.
+- Deployment fails: open Cloudflare → Deployments → Failed deployment → Build logs. Existing Cloudflare bindings are unchanged by this package.
+- No listing feed: expected; live listings are *not* included.
+- Map won't load: it uses a third-party map library and public tiles for small-scale testing; your budgets and saved homes still work.
+- Rollback: Use Cloudflare's Deployments list to roll back to your last known successful production deployment; **also revert the v14 GitHub commit** before deploying future changes. This does not restore deleted user data or database changes.
 
-1. Cloudflare dashboard → Settings → Variables and Secrets → add `REPLIERS_API_KEY` as a **secret**. Never commit it to GitHub.
-2. Turn `HOMES_PUBLIC_ENABLED` from `off` to `on` in the correct production configuration only after you have completed the display, attribution, lead-routing and privacy requirements under your agreement.
-3. Redeploy. Search your authorized city and verify properties, photos, brokerage/agent attribution and removal of expired listings.
-4. Check that your agreement permits the particular card view, map view, MLS-ID saving and cost comparisons you intend to operate; adjust the implementation if required.
+## Testing completed
 
-See `HOMES_DATA_LICENSE.md` before enabling live inventory. If no feed is configured, the Homes page continues to offer manually entered comparisons.
-
-## Step 6 — Test, then publish
-
-Run `npm test` if you have Node installed. Verify your preview website with fresh browser storage and with an existing saved account. After testing, merge the branch to your production branch and monitor Cloudflare deployment logs and user feedback.
-
-## How to roll back
-
-In Cloudflare Pages, select a previous successful deployment and roll back (where supported). Or revert the GitHub commit / merge commit, which triggers a new deployment. You can always import your saved personal finance JSON backup from EquityClimb Settings.
-
-**Important:** A green Cloudflare build alone does not prove that Firebase sign-in, live APIs, MLS rights or all country-specific mortgage rules are configured correctly.
+- JavaScript syntax and automated calculation/API tests ran locally.
+- Interactive browser navigation couldn't be confirmed in the working environment (the browser blocks local file/localhost pages). Therefore the live site still needs user acceptance testing before broad promotion.

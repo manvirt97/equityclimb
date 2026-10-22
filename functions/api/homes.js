@@ -51,9 +51,11 @@ export async function onRequestGet({ request, env }) {
   const min = numeric(q.get('minPrice'), 0, 20000000);
   if (max !== null && min !== null && max < min) return json({ error: 'Maximum price must exceed minimum price.' }, 400);
   const beds = Math.floor(numeric(q.get('beds'), 0, 12) || 0);
+  const baths = Math.floor(numeric(q.get('baths'), 0, 12) || 0);
   const params = new URLSearchParams({ city, status: 'A', type, pageNum: String(page), resultsPerPage: '18',
     displayInternetEntireListing: 'Y', displayPublic: 'Y' });
   if (beds) params.set('minBedrooms', String(beds));
+  if (baths) params.set('minBaths', String(baths));
   if (max !== null && max) params.set('maxPrice', String(max));
   if (min !== null && min) params.set('minPrice', String(min));
   const property = q.get('property');

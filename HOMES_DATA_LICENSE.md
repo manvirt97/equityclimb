@@ -1,3 +1,7 @@
+# Important 2026 Repliers eligibility update
+
+For **independent EquityClimb** as a consumer website, Repliers publishes restrictions that may disqualify the proposed business model regardless of an agent partnership. Do not activate the existing Repliers adapter unless Repliers and the appropriate MLS board explicitly approve this exact use in writing. Prefer applying to CREA’s Real Estate Advertising Website program first. See the **v14 eligibility clarification** at the bottom.
+
 # EquityClimb Homes — Live MLS Data and Launch Requirements
 
 ## Why inventory is disabled by default
@@ -37,3 +41,9 @@ CREA has a separate DDF program and application process. It is **not interchange
 ## What users can do right away without MLS approval
 
 Choose a city and search filters, open REALTOR.ca or Zolo externally, enter homes manually in their shortlist, compare monthly cost estimates, and try Canadian fixed-rate mortgage scenarios. They do **not** get a live Canadian-wide inventory or a live median-home-price feed until you connect approved sources.
+
+## v14 eligibility clarification (October 2026)
+
+**Repliers is NOT generally a turnkey feed for an independent EquityClimb consumer portal.** Its current published MLS eligibility guidance permits professionals and developers/vendors working specifically for real estate professionals, and explicitly says independent vendors cannot simply use real-estate agents' MLS credentials to build their own public consumer product. Reference: https://help.repliers.com/en/article/mls-data-access-requirements-who-can-use-mls-apis-wyl8lw/
+
+The realistic first inquiry is CREA's separate Real Estate Advertising Website program: https://www.realtor.ca/ddf/real-estate-advertising-websites. It has a business application process and, if approved, provides advertising-only listing data with listing-agent lead routing and other compliance obligations. The existing Repliers adapter **is not** a DDF adapter. Leave `HOMES_PUBLIC_ENABLED="off"` until the correct rights and a new compliant integration are approved and implemented.

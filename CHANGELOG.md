@@ -1,3 +1,11 @@
+# Version 14.0 — October 2026
+
+- Eliminates wasted Budget whitespace through deterministic independent columns; mobile remains numeric 1–5.
+- Groups navigation into Your Money, Explore, Grow Your Knowledge and Account.
+- Improves Homes with small premium hero, one-click city selection, saved housing search criteria, bathroom filter and contextual area map.
+- Retains manual saved properties, existing financial tools and disabled-by-default MLS licensing safeguards.
+- Clarifies Repliers eligibility limits and adds CREA DDF advertising website application guidance.
+
 # EquityClimb Release Notes
 
 ## Version 13.0 — October 2026

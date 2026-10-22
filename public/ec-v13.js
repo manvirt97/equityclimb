@@ -38,7 +38,7 @@
   const store = () => { try { save(); } catch (_) {} };
   const cityNow = () => (st.homes.city || S.profile.city || 'Calgary').trim();
   const query = () => { const h=st.homes; const p=new URLSearchParams({city:cityNow(),type:h.type,property:h.property,page:String(h.page||1)});
-    for (const n of ['minPrice','maxPrice','beds']) if (f(h[n]) > 0) p.set(n, String(f(h[n])));
+    for (const n of ['minPrice','maxPrice','beds','baths']) if (f(h[n]) > 0) p.set(n, String(f(h[n])));
     return '/api/homes?' + p.toString(); };
   let list = null, requestId = 0, status = null, error = '', fetching = false;
   let detail = null, tab = 'discover', mapOpen = false, map = null, markers = null;
@@ -94,7 +94,7 @@
           <label class="ec13-field"><span>Home type</span><select onchange="EC13.filter('property',this.value)"><option value="all" ${h.property==='all'?'selected':''}>All properties</option><option value="house" ${h.property==='house'?'selected':''}>Residential</option><option value="condo" ${h.property==='condo'?'selected':''}>Condo</option></select></label>
           <label class="ec13-field"><span>Min. price (CAD)</span><input type="number" min="0" step="25000" value="${E(h.minPrice||'')}" placeholder="No minimum" onchange="EC13.filter('minPrice',this.value)"></label>
           <label class="ec13-field"><span>Max. price (CAD)</span><input type="number" min="0" step="25000" value="${E(h.maxPrice||'')}" placeholder="No maximum" onchange="EC13.filter('maxPrice',this.value)"></label>
-          <label class="ec13-field"><span>Bedrooms</span><select onchange="EC13.filter('beds',this.value)">${[['0','Any'],['1','1+'],['2','2+'],['3','3+'],['4','4+'],['5','5+']].map(([n,l])=>`<option value="${n}" ${f(h.beds)===+n?'selected':''}>${l}</option>`).join('')}</select></label>
+          <label class="ec13-field"><span>Bedrooms</span><select onchange="EC13.filter('beds',this.value)">${[['0','Any'],['1','1+'],['2','2+'],['3','3+'],['4','4+'],['5','5+']].map(([n,l])=>`<option value="${n}" ${f(h.beds)===+n?'selected':''}>${l}</option>`).join('')}</select></label><label class="ec13-field"><span>Bathrooms</span><select onchange="EC13.filter('baths',this.value)">${[['0','Any'],['1','1+'],['2','2+'],['3','3+'],['4','4+']].map(([n,l])=>`<option value="${n}" ${f(h.baths)===+n?'selected':''}>${l}</option>`).join('')}</select></label>
         </div>
         <div class="ec13-filter-actions"><button class="btn" onclick="EC13.search()">${ic('refresh')} Search inventory</button>
            <button class="btn ghost" onclick="EC13.useCity()">Use my profile city</button><button class="btn ghost" onclick="EC13.openExternal('realtor')">Search REALTOR.ca ↗</button>
@@ -248,7 +248,7 @@
   }
   window.EC13={
     tab(k) { if(!['discover','saved','lab'].includes(k)) return; tab=k; go('homes'); if(k==='discover'&&!list) search(); },
-    filter(k,v){ const h=st.homes;if(!['city','type','property','minPrice','maxPrice','beds'].includes(k)) return;
+    filter(k,v){ const h=st.homes;if(!['city','type','property','minPrice','maxPrice','beds','baths'].includes(k)) return;
       h[k]=k==='city'?String(v).trim().slice(0,60):v; h.page=1; store(); list=null; error=''; },
     useCity(){ st.homes.city=S.profile.city||'Calgary'; st.homes.page=1; list=null;store();render(); },
     search(){st.homes.page=1;store();search(true);},
