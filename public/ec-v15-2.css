@@ -1,0 +1,22 @@
+/* EquityClimb v15.2 — phone safe area, first-view financial overview, grouped AI */
+.ec152-before-actions {height:22px}
+.ec152-provider-details {border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin-top:15px;background:var(--surface)}
+.ec152-provider-details summary {cursor:pointer;color:var(--ink2);font-weight:650;font-size:13px}
+.ec152-provider-grid {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:14px}
+.ec152-provider-card {border:1px solid var(--line2);border-radius:10px;padding:13px;min-width:0;background:var(--surface2)}
+.ec152-provider-row {display:flex;align-items:center;justify-content:space-between;gap:9px;flex-wrap:wrap;font-size:12px}
+.ec152-provider-card p,.ec152-provider-help {font-size:11px;line-height:1.5;color:var(--mute);margin:8px 0 0}
+.ec152-status {font-size:10px;font-weight:700;border-radius:999px;padding:3px 7px}
+.ec152-status.offline {background:var(--surface);color:var(--mute)}
+.ec152-status.ready {background:rgba(80,169,129,.12);color:var(--pos)}
+.ec152-picker select {width:100%;min-width:0}
+@media (max-width:920px) {
+  /* iOS standalone uses viewport-fit=cover and a translucent status bar.
+     Reserve the top safe-area for *every* page, not only Home. */
+  #view {padding-top:calc(23px + env(safe-area-inset-top, 0px))!important;}
+  .ec152-provider-grid{grid-template-columns:1fr}
+  .ec152-before-actions{height:18px}
+}
+@media (max-width:390px){
+  #view {padding-top:calc(21px + env(safe-area-inset-top, 0px))!important;}
+}
