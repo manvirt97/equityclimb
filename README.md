@@ -1,21 +1,24 @@
-> **Current release: v15.3.** See `UPGRADE_V15_3.md` for deployment instructions and `V15_3_RELEASE_NOTES.md` for scope and limitations.
+# EquityClimb v16.0 — Canadian Financial Intelligence
 
-# EquityClimb v15.1 — mobile-fixed v15
+A Canadian financial planning and homebuying Progressive Web App (PWA) built for Cloudflare Pages.
 
-A Canadian financial literacy and homebuying planning web app. Deploy through GitHub → Cloudflare Pages; static build output directory `public`, no build command.
+**Start here:**
+- `V16_RELEASE_NOTES.md` — what is actually implemented and what is not.
+- `V16_UPGRADE_GUIDE.md` — safe staging, backup, Cloudflare deployment and mobile checks.
+- `CREA_DDF_LIVE_SETUP.md` — separately controlled *unconnected* REALTOR.ca / CREA DDF connection foundation.
 
-**Start here:** Read `UPGRADE_GUIDE.md` (updated for v15.1) and `MOBILE_FIX_README.md`. The v15 AI and Homebuying features are included in this same package.
+## Deployment structure
+- `public/`: app interface, JavaScript, CSS, PWA and service worker; new v16 assets `ec-v16.js`, `ec-v16.css`.
+- `functions/`: Cloudflare Pages API routes and protected AI / approved-feed connectors.
+- `tests/`: Node tests. Run `npm test`, then `npm run syntax`.
+- `wrangler.toml`: existing Cloudflare configuration and bindings.
 
-## Structure
-- `public/`: UI and PWA assets, v15 includes `ec-v15.js`, `ec-v15.css`.
-- `functions/api/`: Cloudflare Pages APIs, including AI router and Homes.
-- `functions/_shared/`: rules, session and source-neutral listing rights schema.
-- `tests/`: automated Node tests (`npm test`).
-- `wrangler.toml`: Cloudflare Pages configuration; existing AI and DB bindings retained.
+Cloudflare Pages static asset directory: `public`. Retain the live project's configured bindings, environment secrets and settings. Do not publish credentials in client-side source.
 
-## Critical safety settings
-- `HOMES_PUBLIC_ENABLED=off` is the correct starting state without MLS distribution rights.
-- `ENABLE_PAID_AI=off` prevents paid model requests until owner opts in and configures paid API keys.
-- `AI_DAILY_LIMIT=20` is a daily per-network safety cap; public access still requires operational abuse monitoring.
+## Safety defaults
+- No paid subscriptions, advertising, financial-product referral system or paywall.
+- CREA / REALTOR.ca feed publishing is **not** approved or enabled; keep DDF and other feed availability flags OFF without a valid signed contract and verified attribution, lead and analytics requirements.
+- Original paid AI provider usage remains owner opt-in (`ENABLE_PAID_AI=off` by default), and user financial context sharing is optional and off by default for new users.
+- Canadian calculations are illustrations, not mortgage offers, verified bank balances, or professional financial advice. Verify legal/tax/regulatory details prior to a real-world decision.
 
-This application offers education and estimates. It is not a licensed brokerage, mortgage lender or law firm. Review provincial rules and professional requirements before acting on property transactions.
+See the release notes for all limitations, especially real-device, security and live integration testing.

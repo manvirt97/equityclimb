@@ -4,7 +4,7 @@
 /* ---------------------------------------------------------------- state */
 const DEF = {
   profile: { name: '', city: '', region: '', country: 'CA', goal: 'own', onboarded: false },
-  theme: 'dark', shareCtx: true, rateMode: 'Live', adj: -0.5, priorities: ['Family', 'Value'], shortlist: [], chat: [],
+  theme: 'light', shareCtx: false, rateMode: 'Live', adj: -0.5, priorities: ['Family', 'Value'], shortlist: [], chat: [],
   // Owner numbers (same keys as earlier versions so old backups still import)
   home: 550000, growth: 3, bal: 450000, rate: 4.0, rtype: 'Variable', pmt: 2400, origP: 470000,
   maturity: '2030-09-01', trigger: 6.0, renewRate: 4.25,

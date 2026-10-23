@@ -38,3 +38,12 @@ AI_DAILY_LIMIT = "20"
 # To opt in later: add OPENAI_API_KEY or ANTHROPIC_API_KEY as Cloudflare secrets,
 # choose pinned, tested OPENAI_MODEL_{FAST,BALANCED,ADVANCED} or
 # ANTHROPIC_MODEL_{FAST,BALANCED,ADVANCED} identifiers, then change flag to on.
+
+# v15.4 REALTOR.ca DDF — PROTECTED, NOT LIVE until an agreement and compliance validation.
+# Credentials belong in Cloudflare Secrets, not here: DDF_CLIENT_ID, DDF_CLIENT_SECRET, DDF_DIAGNOSTIC_TOKEN.
+# DDF public listing display requires a written agreement plus functional inquiries and analytics.
+DDF_PUBLIC_ENABLED = "off"
+DDF_WRITTEN_RIGHTS = "off"
+DDF_LEADS_READY = "off"
+DDF_ANALYTICS_READY = "off"
+DDF_DISPLAY_REVIEWED = "off"

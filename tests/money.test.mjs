@@ -21,7 +21,9 @@ test('costs, affordability warning, maintenance and upfront are explicit',()=>{
  assert.equal(x.closing,9000);
  assert.equal(x.upfront,69000);
  assert.ok(x.requiresInsuranceReview);
- assert.ok(x.caution.includes('Excludes mortgage default-insurance'));
+ assert.ok(x.caution.includes('Mortgage default insurance is estimated'));
+ assert.ok(x.insurancePremium > 0);
+ assert.ok(x.principal > x.price-x.down);
  assert.ok(Math.abs(x.room-(6500-1800-x.total))<.0001);
 });
 test('invalid and very large values are constrained',()=>{

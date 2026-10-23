@@ -26,7 +26,7 @@
     if (!Array.isArray(h.saved)) h.saved = [];
     if (!t.calc) t.calc = {};
     const c = t.calc;
-    const defaults = { price: f(S.buy && S.buy.price, 600000), down: f(S.buy && S.buy.down, 60000),
+    const defaults = { eligible30:false,closingExtra:0, price: f(S.buy && S.buy.price, 600000), down: f(S.buy && S.buy.down, 60000),
       rate: f(S.rate, 4.5), years: 25, tax: f(S.buy && S.buy.tax, 300), insurance: 150,
       utilities: f(S.buy && S.buy.heat, 150), condo: 0, maintenancePct: 1, closingPct: 1.5,
       fixed: true };
@@ -61,7 +61,7 @@
   function snapshotCard(x, idx, manual=false) {
     const rent = (x.rent || st.homes.type === 'lease') && !manual;
     const monthly = !rent && x.price > 0 ? model(x.price).total : null;
-    const image = x.images && x.images[0] && /^https:\/\/cdn\.repliers\.io\//.test(x.images[0]) ? `<img loading="lazy" src="${E(x.images[0])}" alt="Property photo provided by licensed listing service">` : `<div class="ec13-no-photo">${ic('house')}<span>Property photo unavailable</span></div>`;
+    const image = x.images && x.images[0] && /^https:\/\/(?:cdn\.repliers\.io|ddfcdn\.realtor\.ca)\//i.test(x.images[0]) ? `<img loading="lazy" src="${E(x.images[0])}" alt="Property photo provided by licensed listing service">` : `<div class="ec13-no-photo">${ic('house')}<span>Property photo unavailable</span></div>`;
     return `<article class="ec13-property card">
       <div class="ec13-photo">${image}<div class="ec13-source">${manual ? 'Added by you' : 'Licensed listing feed'}</div></div>
       <div class="ec13-property-body">
@@ -73,6 +73,7 @@
           <button class="btn sm" onclick="EC13.analyze('${manual?'saved':'live'}',${idx})">Analyze costs</button>
           ${manual?`<button class="btn sm ghost" onclick="EC13.remove(${idx})">Remove</button>`:`<button class="btn sm ghost" onclick="EC13.remember(${idx})">${st.homes.saved.some(z=>z.providerId===x.id)?'Saved ID ✓':'Save MLS ID'}</button>`}
           ${x.sourceUrl?`<a class="ec13-text-link" target="_blank" rel="noopener noreferrer" href="${E(safeUrl(x.sourceUrl))}">Source ↗</a>`:''}
+          ${!manual&&x.source==='REALTOR.ca DDF'&&safeUrl(x.sourceUrl)?`<a class="ec154-powered" href="${E(safeUrl(x.sourceUrl))}" target="_blank" rel="noopener noreferrer" aria-label="Original listing powered by REALTOR.ca"><img src="https://www.realtor.ca/images/en-ca/powered_by_realtor.svg" alt="Powered by REALTOR.ca" width="125"></a>`:''}
         </div>
       </div>
     </article>`;
@@ -156,7 +157,8 @@
         <div class="ec13-subheading">Recurring ownership costs</div>
         <div class="ec13-two">${formField('tax','Property tax / month')}${formField('insurance','Insurance / month')}${formField('utilities','Utilities / month')}${formField('condo','Condo fees / month')}</div>
         <div class="ec13-two">${formField('maintenancePct','Maintenance / year (% of price)','number',{max:10,step:0.1})}${formField('closingPct','Closing cost allowance (%)','number',{max:10,step:0.1})}</div>
-        <div class="ec13-smallprint">No bank connection required. Change any assumption above to see estimates update.</div>
+        <div class="ec13-two">${formField('closingExtra','Additional closing costs / transfer tax (CAD)','number',{max:2000000})}<label class="ec13-field"><span>30-year insured mortgage eligibility</span><select onchange="EC13.calcField('eligible30',this.value)"><option value="false" ${!cur.eligible30?'selected':''}>Not confirmed — use standard rules</option><option value="true" ${cur.eligible30?'selected':''}>Eligible first-time buyer or new-build buyer</option></select></label></div>
+        <div class="ec13-smallprint">Change your assumptions to update these estimates. Provincial transfer tax, mortgage-insurance sales tax and new-build GST/HST are not automatically calculated.</div>
       </div><div class="card ec13-result-card">
         <div class="ec13-eyebrow">ESTIMATED MONTHLY OWNERSHIP</div><div class="ec13-big">${cad(c.total)}<span>/mo</span></div>
         <p class="small mute">Based on a ${cad(c.price)} purchase and ${cad(c.down)} down payment.</p>
@@ -164,7 +166,11 @@
         <div class="ec13-total"><span>Upfront cash (down + allowance)</span><strong>${cad(c.upfront)}</strong></div>
         <div class="ec13-line"><span>Remaining cash after upfront costs</span><strong>${cash}</strong></div>
         <div class="ec13-note ${positive?'':'ec13-note-warn'}">${positive?'Potential room within your entered budget':'Estimated spending exceeds your entered monthly plan'}<b>${cad(c.room)}/mo</b><small>Uses your saved take-home income, other debts and planned non-housing spending/saving. Existing mortgage debt is not assumed to disappear; check your situation and any placeholder values.</small></div>
-        ${c.requiresInsuranceReview?'<p class="ec13-caution">Down payment below 20%: mortgage default-insurance premiums may be required and are not included in this estimate.</p>':''}
+        <div class="ec13-line"><span>Estimated financed default-insurance premium</span><strong>${cad(c.insurancePremium)}</strong></div>
+        <div class="ec13-line"><span>Minimum down payment for this price</span><strong>${cad(c.minimumDown)}</strong></div>
+        ${!c.downPaymentValid?'<p class="ec13-caution">Down payment is below the usual federal minimum. This scenario is not a standard eligible mortgage.</p>':''}
+        ${c.insuranceNeedsReview?'<p class="ec13-caution">The selected insured-mortgage scenario could not be priced under the standard eligibility assumptions. The monthly payment may be understated. Review before relying on it.</p>':''}
+        ${c.mayHaveSurcharge?'<p class="ec13-caution">Some insured 30-year mortgages have a premium surcharge not included in this basic estimate. Verify with your insurer.</p>':''}
       </div></div>
       <div class="card ec13-stress"><div class="ec13-section-heading"><div><h2>What if mortgage rates change?</h2><p class="small mute">The same home and principal, different rates. Illustrative new mortgage payments, not a prediction of your renewal.</p></div></div>
        <div class="ec13-stress-grid">${[[cur.rate,c.total,'Your scenario'],[f(cur.rate)+1,plus1.total,'Rate +1 percentage point'],[f(cur.rate)+2,plus2.total,'Rate +2 percentage points']].map(([rate,v,label])=>`<div class="ec13-stress-item"><span>${E(label)}</span><b>${cad(v)}/mo</b><small>${f(rate).toFixed(2)}% annual mortgage rate</small></div>`).join('')}</div>
@@ -270,7 +276,7 @@
     analyze(mode,i) { const item=mode==='saved'?st.homes.saved.filter(x=>x.manual)[i]:list?.items?.[i]; if(!item)return;
       if(item.rent || (mode==='live'&&st.homes.type==='lease')) {alert('This is a rental listing. Home-purchase financing does not apply. You can compare rent against a purchase scenario in the Buying Planner.');return;}
       st.calc.price=item.price;st.calc.down=Math.min(f(st.calc.down),item.price);store();tab='lab';go('homes');},
-    calcField(k,v){if(!(k in st.calc))return;st.calc[k]=k==='fixed'?v==='true':Math.max(0,f(v));store();const active=document.activeElement?.id; render(); if(active)document.getElementById(active)?.focus();},
+    calcField(k,v){if(!(k in st.calc))return;st.calc[k]=(k==='fixed'||k==='eligible30')?v==='true':Math.max(0,f(v));store();const active=document.activeElement?.id; render(); if(active)document.getElementById(active)?.focus();},
     toggleTask(id){if(!['plan','homes','learn'].includes(id))return;weekTasks();const a=st.weekDone;st.weekDone=a.includes(id)?a.filter(x=>x!==id):[...a,id];store();render();},
   };
   const render0=window.render;
