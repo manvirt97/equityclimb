@@ -1,3 +1,4 @@
+import { ddfCredentialsPresent, ddfPublicApproved, queryDdfListings } from '../_shared/ddf-client.js';
 /* EquityClimb Homes API: licensed Repliers inventory only. No scraping, no fabricated listings.
    Set secret REPLIERS_API_KEY and env.HOMES_PUBLIC_ENABLED="on" AFTER confirming written display rights.
    GET /api/homes?city=Calgary&type=sale&minPrice=...&maxPrice=...&beds=...&page=1
@@ -38,16 +39,23 @@ export function normalizeListing(x) {
 }
 export async function onRequestGet({ request, env }) {
   const configured = !!env.REPLIERS_API_KEY && String(env.HOMES_PUBLIC_ENABLED || '').toLowerCase() === 'on';
+  const ddfConfigured = ddfCredentialsPresent(env);
+  const ddfLive = ddfPublicApproved(env);
   const q = new URL(request.url).searchParams;
   if (q.get('mode') === 'sources') return json({ feeds: [
     { source: 'Repliers', connected: configured, coverage: 'As permitted by the license', label: 'Existing licensed connector' },
-    { source: 'REALTOR.ca DDF', connected: false, coverage: 'Requires signed agreement and approved technical integration', label: 'Not yet connected' },
+    { source: 'REALTOR.ca DDF', connected: ddfLive, credentialsPresent: ddfConfigured, coverage: 'Only the approved participating inventory; not all Canadian MLS boards', label: ddfLive ? 'Approved feed enabled' : ddfConfigured ? 'Credentials configured — public display still locked' : 'Requires written rights and authorized credentials' },
     { source: 'Regional MLS boards', connected: false, coverage: 'Separate board rights and approved integrations required', label: 'Not yet connected' }
   ], note: 'Coverage is not the same as all active MLS listings in Canada. No sources are combined until appropriate rights and attribution are implemented.' });
-  if (q.get('mode') === 'status') return json({ enabled: configured, provider: configured ? 'Repliers' : null,
-    reason: configured ? null : 'Live listing data requires an approved licensed feed. You can still search external portals and compare homes you add yourself.' });
-  if (!configured) return json({ enabled: false, items: [], total: null, page: 1, pages: 0,
+  if (q.get('mode') === 'status') return json({ enabled: ddfLive || configured, provider: ddfLive ? 'REALTOR.ca DDF' : configured ? 'Repliers' : null,
+    ddf: { credentialsPresent: ddfConfigured, publicEnabled: ddfLive },
+    reason: ddfLive || configured ? null : 'No approved public listing feed is activated. An agreement, lead routing, attribution and analytics are required.' });
+  if (!ddfLive && !configured) return json({ enabled: false, items: [], total: null, page: 1, pages: 0,
     message: 'Live MLS inventory is not connected. No properties have been fabricated.' });
+  if (ddfLive) {
+    try { return json(await queryDdfListings(env, q), 200, 15); }
+    catch (err) { return json({ enabled: true, items: [], error: String(err.message || 'DDF feed unavailable').slice(0, 140) }, 502); }
+  }
   const city = clean(q.get('city'), 60);
   if (city.length < 2) return json({ error: 'Choose a city first.' }, 400);
   const type = q.get('type') === 'lease' ? 'lease' : 'sale';
