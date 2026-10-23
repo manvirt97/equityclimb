@@ -1,12 +1,12 @@
 {
   "name": "equityclimb",
-  "version": "16.1.0",
+  "version": "16.2.0",
   "private": true,
   "type": "module",
   "description": "Cloudflare Pages PWA; no production npm build step",
   "scripts": {
     "test": "node --test tests/*.test.mjs",
-    "syntax": "node --check public/ec-v13.js && node --check public/ec-v14.js && node --check public/ec-v15.js && node --check public/ec-v15-2.js && node --check public/ec-v15-3.js && node --check functions/api/homes.js && node --check functions/api/ai-router.js && node --check public/ec-v15-4.js && node --check functions/_shared/ddf-client.js && node --check functions/api/ddf-diagnostics.js && node --check public/ec-v16.js && node --check public/ec-v16-1.js && node --check public/ec-money-core.js"
+    "syntax": "node --check public/ec-v13.js && node --check public/ec-v14.js && node --check public/ec-v15.js && node --check public/ec-v15-2.js && node --check public/ec-v15-3.js && node --check functions/api/homes.js && node --check functions/api/ai-router.js && node --check public/ec-v15-4.js && node --check functions/_shared/ddf-client.js && node --check functions/api/ddf-diagnostics.js && node --check public/ec-v16.js && node --check public/ec-v16-1.js && node --check public/ec-v16-2.js && node --check public/ec-money-core.js"
   },
   "engines": {
     "node": ">=20"

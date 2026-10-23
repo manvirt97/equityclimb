@@ -147,6 +147,30 @@
     const c=model(); const cur=st.calc;
     const plus1=model(null,{rate:f(cur.rate)+1}), plus2=model(null,{rate:f(cur.rate)+2});
     const positive=c.room>=0;
+    // Use the exact same saved-budget components as model(), so the visible arithmetic
+    // cannot silently disagree with the number printed in the affordability box.
+    const overview=typeof window.ECModel==='function'?window.ECModel():null;
+    const bud=S.budget||{};
+    const incomeUsed=overview?f(overview.income):f(S.income)+f(S.otherInc);
+    const essentialOther=overview?Math.max(0,f(overview.essentials)-f(bud.essentials?.housing)):null;
+    const lifeUsed=overview?f(overview.lifestyle):null;
+    const debtsUsed=overview?f(overview.debt):null;
+    const savingsUsed=overview?f(overview.savings):null;
+    const otherUsed=essentialOther===null?Math.max(0,Object.entries(S.spend||{}).reduce((sum,[k,v])=>sum+(k==='Housing'?0:f(v)),0)):
+      Math.max(0,essentialOther+lifeUsed+debtsUsed+savingsUsed);
+    const available=incomeUsed-otherUsed; // Identical to ECMoney.ownership()'s room calculation when income is supplied.
+    const budgetEquation=`<div class="ec162-quickmath">${cad(available)} available − ${cad(c.total)} ownership = <b>${cad(c.room)}/mo</b></div>`;
+    const details=essentialOther!==null?`<details class="ec162-math-details"><summary>View budget inputs</summary>
+        <div>Take-home income & other income <b>${cad(incomeUsed)}</b></div>
+        <div>Essentials excluding current housing <b>−${cad(essentialOther)}</b></div>
+        <div>Lifestyle spending <b>−${cad(lifeUsed)}</b></div>
+        <div>Existing mortgage & other debt <b>−${cad(debtsUsed)}</b></div>
+        <div>Planned savings <b>−${cad(savingsUsed)}</b></div>
+        <div class="ec162-math-total">Available for new housing <b>${cad(available)}</b></div>
+      </details>`:`<div class="ec162-quickmath">Based on existing legacy spending entries; review Budget & Cash Flow for accuracy.</div>`;
+    const downFormula=c.price>=1500000?`20% × ${cad(c.price)} = ${cad(c.minimumDown)}`:
+      c.price<=500000?`5% × ${cad(c.price)} = ${cad(c.minimumDown)}`:
+      `5% × ${cad(500000)} + 10% × ${cad(c.price-500000)} = ${cad(c.minimumDown)}`;
     const cash= f(S.cash) ? `<span class="${c.cashAfterClosing>=0?'ec13-positive':'ec13-negative'}">${cad(c.cashAfterClosing)}</span>` : '<span>Not supplied</span>';
     return `<section class="ec13-lab">
       <div class="ec13-section-heading"><div><h2>Financial Decision Lab</h2><p class="small mute">Try a property's price, your down payment and different interest-rate scenarios. All numbers are editable.</p></div><span class="ec13-badge">Illustrative · CAD</span></div>
@@ -165,9 +189,9 @@
         <div class="ec13-line-sep">${infoRows(c)}</div>
         <div class="ec13-total"><span>Upfront cash (down + allowance)</span><strong>${cad(c.upfront)}</strong></div>
         <div class="ec13-line"><span>Remaining cash after upfront costs</span><strong>${cash}</strong></div>
-        <div class="ec13-note ${positive?'':'ec13-note-warn'}">${positive?'Potential room within your entered budget':'Estimated spending exceeds your entered monthly plan'}<b>${cad(c.room)}/mo</b><small>Uses your saved take-home income, other debts and planned non-housing spending/saving. Existing mortgage debt is not assumed to disappear; check your situation and any placeholder values.</small></div>
+        <div class="ec13-note ${positive?'':'ec13-note-warn'}">${positive?'Potential room within your entered budget':'Estimated spending exceeds your entered monthly plan'}<b>${cad(c.room)}/mo</b>${budgetEquation}${details}<small>Based on saved profile and budget inputs. Existing mortgage payments remain included; verify your amounts and whether this home replaces your current one.</small></div>
         <div class="ec13-line"><span>Estimated financed default-insurance premium</span><strong>${cad(c.insurancePremium)}</strong></div>
-        <div class="ec13-line"><span>Minimum down payment for this price</span><strong>${cad(c.minimumDown)}</strong></div>
+        <div class="ec13-line"><span>Minimum down payment for this price</span><strong>${cad(c.minimumDown)}</strong></div><div class="ec162-downmath" aria-label="Minimum down payment calculation">${downFormula}</div>
         ${!c.downPaymentValid?'<p class="ec13-caution">Down payment is below the usual federal minimum. This scenario is not a standard eligible mortgage.</p>':''}
         ${c.insuranceNeedsReview?'<p class="ec13-caution">The selected insured-mortgage scenario could not be priced under the standard eligibility assumptions. The monthly payment may be understated. Review before relying on it.</p>':''}
         ${c.mayHaveSurcharge?'<p class="ec13-caution">Some insured 30-year mortgages have a premium surcharge not included in this basic estimate. Verify with your insurer.</p>':''}
