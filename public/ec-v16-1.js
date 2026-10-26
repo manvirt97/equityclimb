@@ -14,7 +14,7 @@ function hero(m){
  const surplus=hasIncome?money(m.unallocated):'Add your income';
  const changed=hasIncome?(num(m.unallocated)<0?'Review monthly expenses':'Available after planned spending'):'Finish your income profile to calculate cash flow';
  return `<section class="ec161-hero" aria-label="Your financial overview">
-  <div class="ec161-hero-content"><span class="ec161-topline"><span class="ec161-live-dot"></span> YOUR FINANCIAL COMMAND CENTRE <span class="ec161-version">VERSION 16.2</span></span>
+  <div class="ec161-hero-content"><span class="ec161-topline"><span class="ec161-live-dot"></span> YOUR FINANCIAL COMMAND CENTRE <span class="ec161-version">VERSION 16.3</span></span>
    <h2>See the full picture.<br><em>Make your next move.</em></h2>
    <div class="ec161-hero-metrics"><div class="ec161-networth"><span>YOUR NET WORTH</span><strong>${money(m?.net)}</strong><small>${money(m?.assets)} assets <b>−</b> ${money(m?.liab)} liabilities</small></div>
    <div class="ec161-hero-sep"></div><div class="ec161-hero-cash"><span>MONTHLY CASH FLOW</span><strong>${E(surplus)}</strong><small>${E(changed)}</small></div></div>
@@ -62,7 +62,7 @@ const oldHomes=V.homes;
 V.homes=function(){const html=oldHomes.apply(this,arguments);const t=document.createElement('template');t.innerHTML=html;const root=t.content;
  const h1=[...root.children].find(el=>el.tagName==='H1');if(h1)h1.textContent='Real estate, with clarity.';
  const lede=[...root.children].find(el=>el.classList?.contains('lede'));if(lede)lede.textContent='Search independently. Compare confidently. Make decisions that fit your finances.';
- const banner=root.querySelector('.ec13-banner, .ec14-portal-intro');if(banner){banner.innerHTML=`<div class="ec161-re-kicker">YOUR PROPERTY DECISION WORKSPACE <span>16.2</span></div><h2>Find the right home.<br><em>Understand the true cost.</em></h2><p>One place for your own shortlist, Canadian ownership estimates and homebuying decisions.</p><div class="ec161-re-steps"><span>01 · DISCOVER</span><span>02 · COMPARE</span><span>03 · DECIDE</span></div>`;banner.classList.add('ec161-real-hero');}
+ const banner=root.querySelector('.ec13-banner, .ec14-portal-intro');if(banner){banner.innerHTML=`<div class="ec161-re-kicker">YOUR PROPERTY DECISION WORKSPACE <span>16.3</span></div><h2>Find the right home.<br><em>Understand the true cost.</em></h2><p>One place for your own shortlist, Canadian ownership estimates and homebuying decisions.</p><div class="ec161-re-steps"><span>01 · DISCOVER</span><span>02 · COMPARE</span><span>03 · DECIDE</span></div>`;banner.classList.add('ec161-real-hero');}
  noFeedWorkspace(root);
  const b=root.querySelector('.ec16-homes-tools');if(b)b.classList.add('ec161-home-tools');
  const w=document.createElement('div');w.append(root);return w.innerHTML;
@@ -79,7 +79,7 @@ function afterPaint(){
   const el=document.querySelector('#view .ec14-portal-intro');
   if(el&&!el.classList.contains('ec161-real-hero')){
     el.classList.add('ec161-real-hero');
-    el.innerHTML='<div class="ec161-re-kicker">EQUITYCLIMB REAL ESTATE <span>VERSION 16.2</span></div><h2>Find the right home.<br><em>Know what it really costs.</em></h2><p>A personal homebuying workspace built around your own shortlist, your budget and Canadian ownership costs.</p><div class="ec161-re-steps"><span>01 · DISCOVER</span><span>02 · COMPARE</span><span>03 · DECIDE</span></div>';
+    el.innerHTML='<div class="ec161-re-kicker">EQUITYCLIMB REAL ESTATE <span>VERSION 16.3</span></div><h2>Find the right home.<br><em>Know what it really costs.</em></h2><p>A personal homebuying workspace built around your own shortlist, your budget and Canadian ownership costs.</p><div class="ec161-re-steps"><span>01 · DISCOVER</span><span>02 · COMPARE</span><span>03 · DECIDE</span></div>';
   }
   if(document.querySelector('#view .ec161-no-feed')){document.querySelector('#view .ec14-location-strip')?.remove();}
   if(S.ec16?.legacyDemoNeedsReview){const lab=document.querySelector('#view .ec13-lab');

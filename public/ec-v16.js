@@ -9,7 +9,7 @@
  const N=(v,d=0)=>Number.isFinite(Number(v))&&v!==''&&v!=null?Number(v):d;
  const CAD=v=>new Intl.NumberFormat('en-CA',{style:'currency',currency:'CAD',maximumFractionDigits:0}).format(N(v));
  const st=S.ec16=(S.ec16&&typeof S.ec16==='object'&&!Array.isArray(S.ec16))?S.ec16:{};
- if(!Array.isArray(st.pins))st.pins=['budget','homes','advisor','goals'];
+ if(!Array.isArray(st.pins))st.pins=['budget','homes','advisor','market'];
  if(!st.landing)st.landing='home';
  if(st.fhsaSaved===undefined)st.fhsaSaved=0;
  if(st.fhsaMonthly===undefined)st.fhsaMonthly=300;

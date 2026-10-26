@@ -1,0 +1,63 @@
+/* EquityClimb v16.3 — accessible dark cards, compact market lesson, simple Back navigation. */
+.ec163-backbar{display:flex;align-items:center;gap:12px;margin:-7px 0 15px;min-height:35px;color:var(--mute);font-size:12px}
+.ec163-back{display:inline-flex;align-items:center;gap:8px;min-height:38px;padding:7px 13px;border:1px solid var(--line2);border-radius:11px;background:var(--surface);color:var(--ink);font-weight:700;font-size:12px;cursor:pointer;transition:border-color .15s,background .15s}
+.ec163-back:hover{background:var(--surface2);border-color:var(--accent)}
+.ec163-back:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+.ec163-back>span:first-child{font-size:18px;line-height:1;color:var(--accent)}
+.ec163-back-context{font-size:11px;max-width:45vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ec163-default-nav{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:14px;padding:13px 15px;border:1px solid var(--line);background:var(--surface2);border-radius:13px}
+.ec163-default-nav>div{display:grid;gap:4px;flex:1 1 200px;min-width:0}
+.ec163-default-nav strong{font-size:12px;color:var(--ink)}
+.ec163-default-nav small{font-size:11px;line-height:1.5;color:var(--ink2)}
+/* In the actual Markets view, the previous book SVG inherited browser intrinsic sizing.
+   It expanded the Learn note into several hundred pixels of empty space on iPhone. */
+#mk-brief .note>svg,.v5-layout #mk-brief .note>svg{width:17px!important;height:17px!important;min-width:17px!important;min-height:17px!important;max-width:17px!important;max-height:17px!important;display:inline-block!important;vertical-align:-3px;fill:none;stroke:var(--accent);margin-right:6px}
+#mk-brief .note{height:auto!important;min-height:0!important;max-height:none!important;padding:13px 15px!important;line-height:1.55;overflow:visible!important}
+#mk-brief .note b{color:var(--ink)}
+.v5-layout{align-items:start}
+.v5-layout>div{align-self:start;min-height:0}
+/* v16.1 used fixed white backgrounds. Respect the dark palette across every revamped card. */
+html[data-theme="dark"] .ec161-active .side{background:var(--surface);border-right-color:var(--line)}
+html[data-theme="dark"] .ec161-active .ec14-nav-item.active,
+html[data-theme="dark"] .ec161-active .ec14-nav-item:hover{background:var(--surface2)!important;color:var(--ink)}
+html[data-theme="dark"] .ec161-account-check,
+html[data-theme="dark"] .ec161-three-metrics>.kpi,
+html[data-theme="dark"] .ec161-monthly-details,
+html[data-theme="dark"] .ec161-no-feed,
+html[data-theme="dark"] .ec161-real-actions article{background:var(--surface)!important;border-color:var(--line2)!important;color:var(--ink)!important;box-shadow:none}
+html[data-theme="dark"] .ec161-account-check summary{color:var(--ink)!important}
+html[data-theme="dark"] .ec161-account-check summary span:nth-of-type(2){color:var(--ink2)!important}
+html[data-theme="dark"] .ec161-account-check summary>b{color:var(--accent)!important}
+html[data-theme="dark"] .ec161-feed-intro{background:linear-gradient(145deg,var(--surface),var(--surface2))!important}
+html[data-theme="dark"] .ec161-feed-intro h2{color:var(--ink)!important}
+html[data-theme="dark"] .ec161-feed-intro p{color:var(--ink2)!important}
+html[data-theme="dark"] .ec161-pill{border-color:var(--line2)!important;color:var(--ink2)!important;background:var(--surface2)}
+html[data-theme="dark"] .ec161-feed-steps{background:var(--surface2)!important;border-top-color:var(--line2)!important}
+html[data-theme="dark"] .ec161-feed-steps>div{border-color:var(--line2)!important}
+html[data-theme="dark"] .ec161-feed-steps strong,
+html[data-theme="dark"] .ec161-real-actions h3{color:var(--ink)!important}
+html[data-theme="dark"] .ec161-feed-steps small,
+html[data-theme="dark"] .ec161-real-actions p{color:var(--ink2)!important}
+html[data-theme="dark"] .ec161-tile-icon{background:var(--surface2)!important;border-color:var(--line2)!important;color:var(--accent)!important}
+html[data-theme="dark"] .ec161-feed-actions .ec161-action.secondary,
+html[data-theme="dark"] .ec161-real-actions .ec161-action.secondary{background:var(--surface2)!important;color:var(--accent)!important;border-color:var(--line2)!important}
+html[data-theme="dark"] .ec161-settings-hero{background:linear-gradient(145deg,var(--surface),var(--surface2))!important;border-top-color:var(--accent)!important}
+html[data-theme="dark"] .ec161-settings-hero h2,
+html[data-theme="dark"] .ec161-settings-hero strong{color:var(--ink)!important}
+html[data-theme="dark"] .ec161-smart-move .ec16-intelligence{background:linear-gradient(130deg,var(--surface2),var(--surface))!important;border-color:var(--line2)!important;color:var(--ink)!important}
+html[data-theme="dark"] .ec161-smart-move .ec16-intelligence h2,
+html[data-theme="dark"] .ec161-smart-move .ec16-intelligence strong{color:var(--ink)!important}
+html[data-theme="dark"] .ec161-smart-move .ec16-intelligence p{color:var(--ink2)!important}
+html[data-theme="dark"] .ec161-smart-move .ec16-intelligence .ec16-label{color:var(--accent)!important}
+html[data-theme="dark"] .ec161-migration-review{background:var(--surface2)!important;color:var(--ink2)!important}
+html[data-theme="dark"] .ec161-migration-review button{color:var(--accent)!important}
+/* Other mixed legacy controls should never have dark text on a dark fill. */
+html[data-theme="dark"] .ec16-preferences select,
+html[data-theme="dark"] .ec16-preferences input:not([type="checkbox"]){background:var(--surface2);color:var(--ink);border-color:var(--line2)}
+html[data-theme="dark"] .ec16-preferences select option{background:var(--surface2);color:var(--ink)}
+@media(max-width:920px){.ec163-backbar{margin:-4px 0 12px}#mk-brief .note{margin:12px 0 0!important;display:block!important}}
+@media(max-width:460px){.ec163-default-nav>.ec16-soft-button{width:100%}}
+@media(prefers-reduced-motion:reduce){.ec163-back{transition:none}}
+
+/* Print output should not include an in-app navigation control. */
+@media print{.ec163-backbar,.ec163-default-nav{display:none!important}}
