@@ -150,14 +150,19 @@
       if(oldNote)oldNote.innerHTML='Rates unavailable. <button type="button" onclick="loadRates(true)">Refresh</button>';
       const w=document.createElement('div');w.append(t.content);return w.innerHTML;
     } // Retain the watchlist even if current rates are unavailable.
-    const series=[['Prime',RATES?.prime],['BoC policy',RATES?.policy],['5-year bond',RATES?.bond5],['5-year posted',RATES?.fiveYearPosted]];
+    const series=[['Prime',RATES?.prime],[RATES?.policy?.announced?'BoC policy · announced':'BoC policy',RATES?.policy],['5-year bond',RATES?.bond5],['5-year posted',RATES?.fiveYearPosted]];
     const rows=series.filter(([_,r])=>Number.isFinite(N(r?.value,NaN))).map(([label,r])=>`<div class="card flat kpi"><div class="l">${E(label)}</div><div class="v">${N(r.value).toFixed(2)}%</div></div>`).join('');
     if(rows){block.className='grid ec8-rates ec16-rates';block.innerHTML=rows;}
     for(const element of [...t.content.querySelectorAll('.ec8-ratesline,.ec8-ann,.ec8-official,.ec8-warn,.ec8-boc')])element.remove();
     const stat=window.EC8?.status?.(),date=RATES?.prime?.date,age=date?(Date.now()-Date.parse(date+'T12:00:00'))/864e5:null;
     const detail=document.createElement('details');detail.className='ec16-source-details';
     detail.innerHTML=`<summary>Rate source & status${age!=null&&age>30?' · verify before relying':''}</summary><p>Bank of Canada observations where available. Saved data may be used when connection fails. Prime observation dated ${E(date||'unknown')}. ${stat?.err?'Latest refresh did not succeed; verify current rates.':'Rates can change.'}</p><button type="button" onclick="loadRates(true)">Refresh rates</button>`;
-    block.after(detail);
+    const decision=RATES?.policyAnnouncement || (RATES?.policy?.announced ? RATES.policy : null);
+    if (decision && Number.isFinite(+decision.value) && /^\\d{4}-\\d{2}-\\d{2}$/.test(decision.date||'')) {
+      const bulletin=document.createElement('div');bulletin.className='ec16-boc-bulletin';
+      bulletin.innerHTML=`<strong>Bank of Canada policy decision: ${N(decision.value).toFixed(2)}% <span>announced ${E(decision.date)}</span></strong><p>Effective ${E(decision.effectiveDate||'next business day')} · Latest reported bank prime: ${RATES?.prime?N(RATES.prime.value).toFixed(2)+'% (observation '+E(RATES.prime.date||'unknown')+')':'not yet available'}. The prime rate is set by banks and may update separately. <a href="${E(decision.sourceUrl||'https://www.bankofcanada.ca/core-functions/monetary-policy/key-interest-rate/')}" target="_blank" rel="noopener noreferrer">Official Bank of Canada source ↗</a></p>`;
+      block.after(bulletin);bulletin.after(detail);
+    } else block.after(detail);
     const holder=document.createElement('div');holder.append(t.content);return holder.innerHTML;
  };
  const olderPaint=window.EC8_PAINT;
