@@ -48,7 +48,8 @@ export function summarize(ob, id) {
   return out;
 }
 async function series(id, n, fresh) {
-  const url = `${VALET}${id}/json?recent=${n}` + (fresh ? `&_=${Date.now()}` : '');
+  // The Valet API rejects unsupported cache-buster parameters with HTTP 400.
+  const url = `${VALET}${id}/json?recent=${n}`;
   const ac = new AbortController(), t = setTimeout(() => ac.abort(), 8000);
   try {
     const r = await fetch(url, fresh ? { headers: { 'cache-control': 'no-cache' }, signal: ac.signal } : { cf: { cacheTtl: 300, cacheEverything: true }, signal: ac.signal });
