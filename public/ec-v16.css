@@ -91,3 +91,10 @@ main{min-width:0;max-width:1520px}h1,h2,h3{overflow-wrap:break-word}
 .ec16-boc-bulletin strong span{font-size:11px;font-weight:500;color:var(--ink2)}
 .ec16-boc-bulletin p{margin:5px 0 0;font-size:11.5px;line-height:1.65;color:var(--ink2)}
 .ec16-boc-bulletin a{color:var(--accent);text-underline-offset:3px}
+
+/* Lender-confirmed prime announcement: Market-only, distinct from BoC policy. */
+.ec16-prime-announcement{margin:12px 0 7px;padding:13px 16px;border-radius:12px;background:var(--surface2);color:var(--ink);border:1px solid var(--line2);border-left:3px solid var(--accent)}
+.ec16-prime-announcement strong{font-size:14px;color:var(--ink)}
+.ec16-prime-announcement span{font-size:11px;color:var(--ink2);margin-left:6px}
+.ec16-prime-announcement p{font-size:11.5px;line-height:1.65;color:var(--ink2);margin:6px 0 0}
+.ec16-prime-announcement a{color:var(--accent);text-underline-offset:3px}
