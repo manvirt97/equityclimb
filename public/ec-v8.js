@@ -55,7 +55,7 @@
     return { typical, now: now0, prime, policy, expectedPrime: +(policy + typical).toFixed(2), primeDate: lp.d, policyDate: lo.d, mismatch: Math.abs(now0 - typical) > 0.04 };
   }
   async function fetchSeries(id, n) {
-    const r = await fetch(`${VALET}${id}/json?recent=${n}&_=${Date.now()}`, { cache: 'no-store' });
+    const r = await fetch(`${VALET}${id}/json?recent=${n}`, { cache: 'no-store' });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const j = await r.json();
     const ob = (j.observations || []).filter(o => o[id] && o[id].v !== undefined && o[id].v !== '');
