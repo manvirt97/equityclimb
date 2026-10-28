@@ -20,5 +20,5 @@ test('Home organizes KPIs, market and detail panels without recalculating values
 });
 test('New resources are included in build and cache',()=>{
  for(const s of ['ec-v15-3.js?v=15.3','ec-v15-3.css?v=15.3'])assert.ok(html.includes(s));
- assert.match(sw,/eq-v16-6-boc-hotfix/);
+ assert.match(sw,/eq-v16-7-prime-announcement/);
 });
