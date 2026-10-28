@@ -70,6 +70,7 @@
        '<button type="button" onclick="EC164.price(850000)">$850k</button></div>'+
      '<div class="ec164-preview" id="ec164-preview" aria-live="polite">'+statsHTML(d)+'</div>'+
      '<div class="ec164-primary-actions"><button class="ec164-main" type="button" onclick="EC164.savePlan()">♡ Save this search plan</button>'+
+       '<button type="button" class="ec164-copy" onclick="EC164.copy()">Copy my filters</button>'+
        '<a href="https://www.realtor.ca/" target="_blank" rel="noopener noreferrer">Browse REALTOR.ca ↗</a>'+
        '<a href="https://www.zolo.ca/" target="_blank" rel="noopener noreferrer">Browse Zolo ↗</a></div>'+
      '<div class="ec164-help">Listing sites open separately. Apply the filters there; EquityClimb does not receive live listings or send new-listing alerts. Ownership costs are estimates, not lender offers.</div>'+
@@ -125,6 +126,16 @@
    const wrap=document.createElement('div');wrap.append(t.content);return wrap.innerHTML;
  };
  window.EC164={
+   copy(){
+     const d=draft();
+     const text=['EquityClimb search plan','Location: '+(d.city||'Not selected'),'Budget ceiling: '+CAD(d.price),
+       'Bedrooms: '+bedsLabel[d.beds],'Home type: '+typeLabel[d.type]].join('\n');
+     const clipboard=window.navigator?.clipboard;
+     if(clipboard?.writeText){
+       clipboard.writeText(text).then(()=>notice('Search filters copied. Apply them on the listing website.'),
+         ()=>notice('Clipboard access was blocked. You can enter the same filters on the listing website.'));
+     }else notice('Copy is unavailable in this browser. You can enter these filters on the listing website.');
+   },
    field(key,value){
      if(!['city','price','beds','type'].includes(key))return;
      const d=draft();d[key]=value;st.discoveryDraft=normalize(d);saveSafe();
