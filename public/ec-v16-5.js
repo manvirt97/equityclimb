@@ -92,51 +92,7 @@ function matchboard(){
  '<div class="ec165-empty"><div><strong>Start with a home worth considering.</strong><p>Find an actual property at your preferred listing website, add it using the form below, then it will appear here with financial context and viewing notes.</p></div><div><a href="https://www.realtor.ca/" target="_blank" rel="noopener noreferrer">Browse REALTOR.ca ↗</a><a href="https://www.zolo.ca/" target="_blank" rel="noopener noreferrer">Browse Zolo ↗</a></div></div>')+
  '</section>';
 }
-function nextMove(){
- const saved=homes(),counts={finalist:0,visited:0,considering:0};
- saved.forEach(x=>{const k=savedStage(x);if(k in counts)counts[k]++;});
- const m=profile(),housing=housingRoom();
- const focus=saved.find(x=>id(x)===String(state.focus||''))||saved.find(x=>savedStage(x)==='finalist')||saved.find(x=>savedStage(x)==='visited')||saved[0];
- let heading='',detail='',primary='Real Estate',action='homes';
- if(focus){
-   const e=evaluate(focus);
-   heading=focus.address||'Continue your home comparison';
-   detail=e.title+'. '+(e.estimate?'Estimated ownership '+CAD(e.estimate.total)+'/mo at your saved rate. ':'')+'Open your shortlist to review the full picture.';
-   primary='Continue this decision';action='saved';
- }else if(!m||N(m.income)<=0){
-   heading='Build a plan around your own numbers';
-   detail='Enter income and expenses to see which future home purchases could fit your budget.';
-   primary='Complete my financial profile';action='profile';
- }else if(housing!==null&&housing<=0){
-   heading='Make room for the home you want';
-   detail='Your entered spending and savings leave no estimated monthly housing room. Review the budget before shopping.';
-   primary='Review my budget';action='budget';
- }else{
-   heading='Find a home. Keep your financial plan.';
-   detail='Bring a real property you like into EquityClimb. See ownership cost and compare it against your saved monthly plan.';
-   primary='Start comparing homes';action='saved';
- }
- return '<section class="ec165-brief" aria-label="Your next meaningful step">'+
- '<div class="ec165-brief-text"><div class="ec165-eyebrow">YOUR DECISION BRIEF · BASED ON SAVED INPUTS</div>'+
- '<h2>'+E(heading)+'</h2><p>'+E(detail)+'</p>'+
- '<div class="ec165-brief-pills"><span>'+saved.length+' saved '+(saved.length===1?'home':'homes')+'</span><span>'+counts.finalist+' finalists</span>'+
- (housing!==null?'<span>'+CAD(housing)+'/mo estimated housing room</span>':'<span>Income required for budget fit</span>')+
- '</div></div><div class="ec165-brief-cta"><button type="button" onclick="EC165.open(\''+action+'\')">'+E(primary)+' <span aria-hidden="true">↗</span></button>'+
- '<button class="ec165-secondary" type="button" onclick="EC165.open(\'readiness\')">Review home readiness</button></div></section>';
-}
-const priorHome=V.home;
-V.home=function(){
- const html=priorHome.apply(this,arguments);if(!S.profile?.onboarded)return html;
- const t=document.createElement('template');t.innerHTML=html;
- const target=t.content.querySelector('.ec16-intelligence');
- const node=document.createElement('div');node.innerHTML=nextMove();
- if(target)target.replaceWith(node.firstElementChild);
- else {const hero=t.content.querySelector('.ec161-hero');if(hero)hero.after(node.firstElementChild);else t.content.prepend(node.firstElementChild);}
- // Replace redundant generic advice, retain existing weekly tasks and actual data.
- t.content.querySelector('.ec13-home-lead')?.remove();
- t.content.querySelector('.ec13-home-cards')?.remove();
- const wrap=document.createElement('div');wrap.append(t.content);return wrap.innerHTML;
-};
+/* Only the Real Estate shortlist is enhanced. Home/dashboard renderers are untouched. */
 const priorHomes=V.homes;
 V.homes=function(){
  const html=priorHomes.apply(this,arguments);if(!S.profile?.onboarded)return html;
