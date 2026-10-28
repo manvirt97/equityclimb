@@ -158,6 +158,72 @@ export async function latestOfficialPolicy(announcements, observed, options={}) 
     +(policy.value - observed.value).toFixed(2) : 0, observed: observed || null };
 }
 
+/* --------- Prime is set by LENDERS, not by the Bank of Canada ---------
+   Valet V80691311 is a weekly retrospective statistical observation.
+   On a BoC decision day, a lender's official announcement may be more current.
+   These are verified lender-owned sources, not guessed policy-rate spreads. */
+const PRIME_RELEASES = [
+  { lender: 'RBC Royal Bank', date: '2026-10-28', url: 'https://www.rbc.com/newsroom/article.html?article=126172' },
+  { lender: 'TD Canada Trust', date: '2026-10-28', url: 'https://td.mediaroom.com/2026-10-28-TD-Canada-Trust-announces-change-to-TD-Prime-Rate' }
+];
+const TD_POSTED_PRIME = 'https://www.td.com/ca/en/personal-banking/products/todays-rates-and-prime';
+function calendarDate(y, m, d) {
+  const mo=MONTHS[String(m).toLowerCase().slice(0,3)]||Object.entries(MONTHS).find(([name])=>name.startsWith(String(m).toLowerCase().slice(0,3)))?.[1];
+  const day=Number(d),year=Number(y);
+  if(!mo||year<2000||year>2100||day<1||day>31)return null;
+  const date = new Date(Date.UTC(year,mo-1,day));
+  return date.getUTCFullYear()===year && date.getUTCMonth()===mo-1 && date.getUTCDate()===day ? date.toISOString().slice(0,10) : null;
+}
+export function parsePrimeRelease(html, meta) {
+  if (!PRIME_RELEASES.some(x => x.url === meta?.url && x.lender === meta?.lender && x.date === meta?.date)) return null;
+  const words=stripTags(html);
+  if(!/prime\s+(?:lending\s+)?rate/i.test(words))return null;
+  const valueMatch=words.match(/\bprime\s+(?:lending\s+)?rate[\s\S]{0,135}?\bto\s+(\d{1,2}(?:\.\d{1,3})?)\s*(?:%|per\s+cent)\b/i);
+  const effect=words.match(/\beffective\s+(?:on\s+)?(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2}),?\s+(\d{4})\b/i);
+  if(!valueMatch||!effect)return null;
+  const value=Number(valueMatch[1]),effectiveDate=calendarDate(effect[3],effect[1],effect[2]);
+  if(!effectiveDate||!Number.isFinite(value)||value<0||value>30||effectiveDate<meta.date)return null;
+  return {value,date:meta.date,effectiveDate,sourceUrl:meta.url,lender:meta.lender,confirmed:true};
+}
+export function parseTdPostedPrime(html) {
+  // Live TD prime table is a second source for any future rate changes.
+  const words=stripTags(html);
+  const r=words.match(/\bTD\s+Prime\s+Rate\s+(\d{1,2}(?:\.\d{1,3})?)\s*%\s+(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:tember|t)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\.?\s+(\d{1,2}),?\s+(\d{4})/i);
+  if(!r)return null;
+  const value=Number(r[1]),date=calendarDate(r[4],r[2],r[3]);
+  if(!date||!Number.isFinite(value)||value<0||value>30)return null;
+  return {value,date,effectiveDate:date,sourceUrl:TD_POSTED_PRIME,lender:'TD Canada Trust',confirmed:true,posted:true};
+}
+export function resolvePrime(observed, confirmed, asOf) {
+  if(!confirmed)return {prime:observed||null};
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(confirmed.effectiveDate)||!Number.isFinite(confirmed.value))return {prime:observed||null};
+  // More recently dated weekly observations take precedence over old official releases.
+  if(observed?.date && observed.date>=confirmed.effectiveDate && observed.value===confirmed.value)
+    return {prime:observed,primeAnnouncement:confirmed,primeObserved:observed};
+  if(observed?.date && observed.date>confirmed.effectiveDate)
+    return {prime:observed};
+  const today=asOf || new Intl.DateTimeFormat('en-CA',{timeZone:'America/Toronto',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  const nowEffective=today>=confirmed.effectiveDate;
+  return {
+    prime:nowEffective ? {...confirmed, date:confirmed.effectiveDate, change:observed&&Number.isFinite(observed.value)?+(confirmed.value-observed.value).toFixed(2):0,lastChange:confirmed.effectiveDate} : observed||null,
+    primeObserved:observed||null,
+    primeAnnouncement:confirmed,
+    primePending:!nowEffective
+  };
+}
+async function latestConfirmedPrime() {
+  const work=[
+    ...PRIME_RELEASES.map(async meta=>parsePrimeRelease(await getText(meta.url,6000),meta)),
+    getText(TD_POSTED_PRIME,6000).then(parseTdPostedPrime)
+  ];
+  const settled=await Promise.allSettled(work);
+  const rates=settled.filter(x=>x.status==='fulfilled'&&x.value).map(x=>x.value);
+  if(!rates.length)throw new Error('Lender announcements and posted prime are unavailable');
+  // The official source with the latest effective date wins, not an assumed BoC spread.
+  rates.sort((a,b)=>b.effectiveDate.localeCompare(a.effectiveDate)||Number(!!b.posted)-Number(!!a.posted));
+  return rates[0];
+}
+
 /* ---------------- handler ---------------- */
 export async function onRequestGet({ request }) {
   const fresh = new URL(request.url).searchParams.get('fresh') === '1';
@@ -190,6 +256,15 @@ export async function onRequestGet({ request }) {
       }
     } catch (e) { errors.policyAnnouncement = String(e && e.message || e).slice(0, 120); }
   }
+  // Confirm announced lender prime independently of the BoC's lagged weekly rate.
+  try {
+    const confirmed=await latestConfirmedPrime();
+    const resolved=resolvePrime(out.prime||null,confirmed);
+    if(resolved.prime)out.prime=resolved.prime;
+    if(resolved.primeObserved)out.primeObserved=resolved.primeObserved;
+    if(resolved.primeAnnouncement)out.primeAnnouncement=resolved.primeAnnouncement;
+    if(typeof resolved.primePending==='boolean')out.primePending=resolved.primePending;
+  } catch (e) { errors.lenderPrime=String(e&&e.message||e).slice(0,120); }
   if (Object.keys(errors).length) out.errors = errors;
   const ok = !!(out.prime || out.policy);
   return new Response(JSON.stringify(ok ? out : { error: 'The Bank of Canada could not be reached right now.', errors }), {
