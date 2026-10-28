@@ -100,6 +100,16 @@
         const base = (typeof RATES !== 'undefined' && RATES) || {}, merged = Object.assign({}, base);
         Object.keys(SERIES).forEach(k => { const w = pick([base[k], ...sources.map(s => s[k])]); if (w) merged[k] = w; });
         merged.source = 'Bank of Canada';
+        // Lender-confirmed prime announcements are distinct from the lagged BoC weekly observation.
+        if (S1?.primeAnnouncement) {
+          merged.primeAnnouncement=S1.primeAnnouncement;
+          merged.primeObserved=S1.primeObserved||S1.prime;
+          merged.primePending=!!S1.primePending;
+        } else if (S1 && !S1.errors?.lenderPrime) {
+          delete merged.primeAnnouncement;
+          delete merged.primeObserved;
+          delete merged.primePending;
+        }
         if (S1?.policyAnnouncement && (!merged.policy || S1.policyAnnouncement.date >= merged.policy.date)) {
           merged.policy = S1.policyAnnouncement;
           merged.policyAnnouncement = S1.policyAnnouncement;
