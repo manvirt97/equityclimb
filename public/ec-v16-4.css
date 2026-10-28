@@ -70,3 +70,5 @@
 @media(max-width:380px){.ec164-field-grid{grid-template-columns:1fr}.ec164-field-grid label:first-child{grid-column:auto}}
 @media(prefers-reduced-motion:reduce){.ec164-studio *,.ec164-home-tile *{transition:none!important;scroll-behavior:auto!important}}
 @media print{.ec164-studio,.ec164-home-tile{display:none!important}}
+/* Keep internal release-number chips out of the consumer experience. */
+.ec161-version,.ec161-re-kicker>span{display:none!important}
