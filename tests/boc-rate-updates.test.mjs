@@ -58,8 +58,11 @@ test('announcement value supersedes last business-daily observation without alte
 test('full /api/boc response reconciles official announcement with observed daily target',async()=>{
  const original=globalThis.fetch;
  const feed='<rss><channel><item><title>Bank of Canada raises the policy rate by 25 basis points to 2.5%</title><link>'+RELEASE+'</link><pubDate>Wed, 28 Oct 2026 14:00:00 GMT</pubDate></item></channel></rss>';
+ const seen=[];
  const fakeFetch=async input=>{
    const u=String(input);
+   seen.push(u);
+   if(u.includes('/valet/observations/')&&u.includes('&_='))return new Response('unsupported query parameter',{status:400});
    let body;
    if(u.includes('/valet/observations/')){
      const id=u.match(/\/observations\/([^/]+)\//)?.[1];
@@ -84,11 +87,14 @@ test('full /api/boc response reconciles official announcement with observed dail
   assert.equal(data.policyObserved.value,2.25);
   assert.equal(data.prime.value,4.45);
   assert.equal(data.prime.date,'2026-10-27');
+  assert.ok(seen.some(u=>u.includes('V39079/json?recent=')));
+  assert.ok(seen.every(u=>!u.includes('/valet/observations/')||!u.includes('&_=')));
  } finally{globalThis.fetch=original;}
 });
 test('daily-only rates fallback chooses newest observation independently for each series',async()=>{
  const original=globalThis.fetch;
- globalThis.fetch=async()=>new Response(JSON.stringify({observations:[...pRows,...primeRows]}),{status:200});
+ const requested=[];
+ globalThis.fetch=async u=>{requested.push(String(u));return new Response(JSON.stringify({observations:[...pRows,...primeRows]}),{status:200});};
  try{
   const res=await legacyRatesGet({request:new Request('https://equityclimb.example/api/rates?fresh=1')});
   const data=await res.json();
@@ -98,10 +104,12 @@ test('daily-only rates fallback chooses newest observation independently for eac
   assert.equal(data.prime.value,4.45);
   assert.equal(data.prime.date,'2026-10-27');
   assert.equal(res.headers.get('cache-control'),'no-store');
+  assert.ok(requested.every(u=>!u.includes('&_=')));
  } finally{globalThis.fetch=original;}
 });
 test('rate refresh and market disclosure are automatic, without touching Home dashboard markup',()=>{
  assert.match(staticJs,/sort\(\(a,b\) => a\.d\.localeCompare\(b\.d\)\)/);
+ assert.doesNotMatch(staticJs,/recent=\$\{n\}&_/);
  assert.match(staticJs,/addEventListener\('focus'/);
  assert.match(staticJs,/setInterval\(\(\) => \{ if \(!document\.hidden/);
  assert.match(marketJs,/ec16-boc-bulletin/);
