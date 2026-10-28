@@ -36,7 +36,9 @@ const iso = d => (isNaN(d) ? null : d.toISOString().slice(0, 10));
 const MONTHS = { january: 1, february: 2, march: 3, april: 4, may: 5, june: 6, july: 7, august: 8, september: 9, october: 10, november: 11, december: 12 };
 
 /* ---------------- Valet series ---------------- */
-function summarize(ob, id) {
+export function summarize(ob, id) {
+  // The Valet API normally sends newest observations first. Normalize ordering before calculating the last change.
+  ob = [...ob].sort((a, b) => a.d.localeCompare(b.d));
   const last = ob[ob.length - 1], v = +last[id].v;
   let i = ob.length - 1;
   while (i > 0 && +ob[i - 1][id].v === v) i--;
@@ -54,7 +56,7 @@ async function series(id, n, fresh) {
     const j = await r.json();
     const ob = (j.observations || []).filter(o => o[id] && o[id].v !== undefined && o[id].v !== '');
     if (!ob.length) throw new Error('no data for ' + id);
-    return ob;
+    return ob.sort((a, b) => a.d.localeCompare(b.d));
   } finally { clearTimeout(t); }
 }
 
@@ -62,6 +64,8 @@ async function series(id, n, fresh) {
    (the most common gap over the last year) instead of remembering a number, and flag it if the two ever drift apart. */
 export function spreadInfo(pObs, pid, oObs, oid) {
   if (!pObs || !oObs || pObs.length < 4 || !oObs.length) return null;
+  pObs = [...pObs].sort((a, b) => a.d.localeCompare(b.d));
+  oObs = [...oObs].sort((a, b) => a.d.localeCompare(b.d));
   const pol = oObs.map(o => [o.d, +o[oid].v]);
   const valAt = d => { let v = null; for (const [dd, vv] of pol) { if (dd <= d) v = vv; else break; } return v; };
   const freq = {};
@@ -125,6 +129,34 @@ async function loadSchedule(sched) {
   return { dates, published: sched.date || null, link: sched.link, title: sched.title };
 }
 
+/* Policy decisions are announced before the business-daily V39079 series reflects them.
+   Trust ONLY the Bank's own dated press release. Never guess policy from prime. */
+export function parsePolicyAnnouncement(html, date, link) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date)) ||
+      !/^https:\/\/www\.bankofcanada\.ca\/\d{4}\/\d{2}\/fad-press-release-\d{4}-\d{2}-\d{2}\/?$/.test(String(link))) return null;
+  const words = stripTags(html).replace(/\s+/g, ' ');
+  // Only use the rate declared for the TARGET FOR THE OVERNIGHT RATE, not the Bank Rate or deposit rate.
+  const m = words.match(/\b(?:increased|raised|reduced|lowered|cut|maintained|held|kept)\s+its\s+target\s+for\s+the\s+overnight\s+rate\b[\s\S]{0,160}?\b(?:to|at)\s+(\d{1,2}(?:\.\d{1,2})?)\s*%/i);
+  if (!m) return null;
+  const value = Number(m[1]);
+  if (!Number.isFinite(value) || value < 0 || value > 30) return null;
+  const effective = new Date(date + 'T12:00:00Z');
+  effective.setUTCDate(effective.getUTCDate() + 1);
+  return { value, date, announced: true, effectiveDate: effective.toISOString().slice(0, 10), sourceUrl: link };
+}
+export async function latestOfficialPolicy(announcements, observed, options={}) {
+  const latest = (announcements || []).filter(a => a?.date && /\/fad-press-release-\d{4}-\d{2}-\d{2}\/?$/.test(a.link || ''))
+    .sort((a,b)=>b.date.localeCompare(a.date))[0];
+  if (!latest || (observed?.date && latest.date < observed.date)) return null;
+  // A failed release read MUST NOT turn an old fixed value into a "live" new rate.
+  const getter = options.getText || getText;
+  const html = await getter(latest.link);
+  const policy = parsePolicyAnnouncement(html, latest.date, latest.link);
+  if (!policy || (observed?.date && policy.date < observed.date)) return null;
+  return { ...policy, change: observed && Number.isFinite(observed.value) ?
+    +(policy.value - observed.value).toFixed(2) : 0, observed: observed || null };
+}
+
 /* ---------------- handler ---------------- */
 export async function onRequestGet({ request }) {
   const fresh = new URL(request.url).searchParams.get('fresh') === '1';
@@ -145,10 +177,22 @@ export async function onRequestGet({ request }) {
     if (a.value.sched) { try { out.schedule = await loadSchedule(a.value.sched); } catch (e) { errors.schedule = String(e && e.message || e).slice(0, 120); } }
     else errors.schedule = 'schedule release not found in the Bank\u2019s recent releases';
   } else errors.announcements = String(a.reason && a.reason.message || a.reason).slice(0, 120);
+  // A same-day official announcement outranks an older daily observation. Prime remains strictly observed.
+  if (Array.isArray(out.announcements) && out.announcements.length) {
+    try {
+      const announced = await latestOfficialPolicy(out.announcements, out.policy);
+      if (announced && (!out.policy || announced.date >= out.policy.date)) {
+        out.policyObserved = out.policy || null;
+        out.policyAnnouncement = announced;
+        if (!out.policy || announced.date > out.policy.date || announced.value !== out.policy.value)
+          out.policy = { ...announced, change: announced.change };
+      }
+    } catch (e) { errors.policyAnnouncement = String(e && e.message || e).slice(0, 120); }
+  }
   if (Object.keys(errors).length) out.errors = errors;
-  const ok = !!out.prime;
+  const ok = !!(out.prime || out.policy);
   return new Response(JSON.stringify(ok ? out : { error: 'The Bank of Canada could not be reached right now.', errors }), {
     status: ok ? 200 : 502,
-    headers: { 'content-type': 'application/json', 'cache-control': fresh ? 'no-store' : 'public, max-age=120' }
+    headers: { 'content-type': 'application/json', 'cache-control': 'no-store' }
   });
 }
