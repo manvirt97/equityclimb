@@ -22,6 +22,16 @@ function setup(){
  vm.runInNewContext(js,context);
  return {S,V,home,api:window.EC165,actions,stats:()=>({saves,renders})};
 }
+test('Home/dashboard renderer stays exactly as it was before the shortlist module loads',()=>{
+ const {V}=setup();
+ // The base Home here is an empty stub; if the module overrides Home at all, identity changes.
+ assert.equal(V.home.toString(),'()=>\'\'');
+ assert.doesNotMatch(js,/V\.home\s*=/);
+ assert.doesNotMatch(js,/function nextMove\(/);
+ assert.doesNotMatch(css,/\.ec165-brief\{/);
+ assert.doesNotMatch(css,/\.ec165-brief-cta/);
+});
+
 test('installed PWA loads only the new decision module, with updated cache',()=>{
  assert.ok(html.includes('ec-v16-5.js?v=16.5'));
  assert.ok(html.includes('ec-v16-5.css?v=16.5'));
