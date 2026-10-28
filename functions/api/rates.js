@@ -9,7 +9,7 @@ export async function onRequestGet({ request } = {}) {
   const url = `https://www.bankofcanada.ca/valet/observations/${Object.keys(SERIES).join(',')}/json?recent=100`;
   const fresh = request ? new URL(request.url).searchParams.get('fresh') === '1' : false;
   try {
-    const r = await fetch(url + (fresh ? `&_=${Date.now()}` : ''), { cache: 'no-store' });
+    const r = await fetch(url, { cache: 'no-store' });
     if (!r.ok) throw new Error('BoC ' + r.status);
     const j = await r.json();
     const out = { source: 'Bank of Canada Valet API', fetched: new Date().toISOString() };
