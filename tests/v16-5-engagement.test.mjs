@@ -55,7 +55,7 @@ test('cash shortfall, insufficient down and monthly overage are recognized',()=>
  S.ec13.calc.down=10000;
  assert.equal(api.evaluate(0).title,'Down payment needs review');
  S.ec13.calc.down=120000;
- S.cash=180000;S.ec13.calc.rate=15;
+ S.cash=180000;S.ec13.calc.rate=25;
  assert.equal(api.evaluate(0).title,'Above planned monthly room');
 });
 test('new buying stages, notes and preferences persist independently of existing shortlist',()=>{
