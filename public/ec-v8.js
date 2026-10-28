@@ -24,7 +24,7 @@
   const FALLBACK = ['2026-10-28', '2026-12-09', '2027-01-27', '2027-03-03', '2027-04-28', '2027-06-02', '2027-07-21', '2027-09-08', '2027-10-27', '2027-12-08'];
   let SCHEDULE = { dates: FALLBACK, live: false, published: '2026-07-27', link: SCHED_LINK };
   let ANN = null, SPREAD = null;
-  const nextBoC = () => SCHEDULE.dates.find(d => daysUntil(d) >= 0) || null;
+  const nextBoC = () => SCHEDULE.dates.find(d => d > new Date().toLocaleDateString('en-CA',{timeZone:'America/Toronto',year:'numeric',month:'2-digit',day:'2-digit'}).replace(/\//g,'-')) || null;
 
   /* ---------------- live rates ---------------- */
   const VALET = 'https://www.bankofcanada.ca/valet/observations/';
@@ -32,6 +32,7 @@
   let FRESH = null, checking = false, lastErr = '', diag = {}, lastCheck = +localStorage.getItem('ec8_lastCheck') || 0;
 
   function summarize(ob, id) {
+    ob = [...ob].sort((a,b) => a.d.localeCompare(b.d));
     const last = ob[ob.length - 1], v = +last[id].v;
     let i = ob.length - 1;
     while (i > 0 && +ob[i - 1][id].v === v) i--;
@@ -42,6 +43,8 @@
   /* Banks keep prime a fixed distance above the Bank's policy rate. The usual distance is learned from the data itself. */
   function spreadInfo(pObs, pid, oObs, oid) {
     if (!pObs || !oObs || pObs.length < 4 || !oObs.length) return null;
+    pObs = [...pObs].sort((a,b) => a.d.localeCompare(b.d));
+    oObs = [...oObs].sort((a,b) => a.d.localeCompare(b.d));
     const pol = oObs.map(o => [o.d, +o[oid].v]);
     const valAt = d => { let v = null; for (const [dd, vv] of pol) { if (dd <= d) v = vv; else break; } return v; };
     const freq = {};
@@ -52,17 +55,17 @@
     return { typical, now: now0, prime, policy, expectedPrime: +(policy + typical).toFixed(2), primeDate: lp.d, policyDate: lo.d, mismatch: Math.abs(now0 - typical) > 0.04 };
   }
   async function fetchSeries(id, n) {
-    const r = await fetch(`${VALET}${id}/json?recent=${n}&_=${Date.now()}`, { cache: 'no-store' });
+    const r = await fetch(`${VALET}${id}/json?recent=${n}`, { cache: 'no-store' });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const j = await r.json();
     const ob = (j.observations || []).filter(o => o[id] && o[id].v !== undefined && o[id].v !== '');
     if (!ob.length) throw new Error('no data');
-    return ob;
+    return ob.sort((a,b) => a.d.localeCompare(b.d));
   }
   async function fromBrowser() {
     const keys = Object.keys(SERIES), res = await Promise.allSettled(keys.map(k => fetchSeries(SERIES[k][0], SERIES[k][1]))), out = {}, raw = {};
     keys.forEach((k, i) => { if (res[i].status === 'fulfilled') { raw[k] = res[i].value; out[k] = summarize(res[i].value, SERIES[k][0]); } });
-    if (!out.prime) { const bad = res.find(x => x.status === 'rejected'); throw new Error(bad ? String(bad.reason && bad.reason.message || bad.reason) : 'no data'); }
+    if (!out.prime && !out.policy) { const bad = res.find(x => x.status === 'rejected'); throw new Error(bad ? String(bad.reason && bad.reason.message || bad.reason) : 'no data'); }
     if (raw.prime && raw.policy) out.spread = spreadInfo(raw.prime, SERIES.prime[0], raw.policy, SERIES.policy[0]);
     return out;
   }
@@ -70,7 +73,7 @@
     const r = await fetch('/api/boc?fresh=1&_=' + Date.now(), { cache: 'no-store' });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const j = await r.json();
-    if (!j || !j.prime) throw new Error('no prime');
+    if (!j || (!j.prime && !j.policy)) throw new Error('no BoC rate');
     return j;
   }
   function pick(cands) {
@@ -97,6 +100,15 @@
         const base = (typeof RATES !== 'undefined' && RATES) || {}, merged = Object.assign({}, base);
         Object.keys(SERIES).forEach(k => { const w = pick([base[k], ...sources.map(s => s[k])]); if (w) merged[k] = w; });
         merged.source = 'Bank of Canada';
+        if (S1?.policyAnnouncement && (!merged.policy || S1.policyAnnouncement.date >= merged.policy.date)) {
+          merged.policy = S1.policyAnnouncement;
+          merged.policyAnnouncement = S1.policyAnnouncement;
+          merged.policyObserved = S1.policyObserved || null;
+        } else if (S1 && !S1.policyAnnouncement) {
+          // Do not leave yesterday's announced value displayed forever after official observations supersede it.
+          delete merged.policyAnnouncement;
+          delete merged.policyObserved;
+        }
         FRESH = merged; RATES = merged;
         try { cache.set('rates', merged); } catch (_) { /* cache is optional */ }
         SPREAD = newestSpread([S1 && S1.spread, D1 && D1.spread]);
@@ -110,17 +122,18 @@
       } else lastErr = 'Couldn\u2019t reach the Bank of Canada. Showing the last saved rates.';
     } catch (err) { lastErr = 'Couldn\u2019t reach the Bank of Canada. Showing the last saved rates.'; }
     checking = false;
-    const after = typeof RATES !== 'undefined' && RATES && RATES.prime ? RATES.prime.value : null;
-    // A new prime rate changes mortgage numbers everywhere, so redraw the page; otherwise just repaint the strip.
-    try { if (before !== after) render(); else if (window.EC8_PAINT) window.EC8_PAINT(); else render(); } catch (err) { console.error(err); }
+    // Policy-only announcements must also repaint immediately: prime can lag until the lender changes it.
+    try { render(); } catch (err) { console.error(err); }
   }
   const _oldLoadRates = window.loadRates;
   window.loadRates = async function (force) {
     await freshRates();
     if (!FRESH && typeof _oldLoadRates === 'function') return _oldLoadRates(force);
   };
-  document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - lastCheck > 30 * 6e4) freshRates(); });
-  setInterval(() => { if (!document.hidden) freshRates(); }, 3 * 3600e3);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden && Date.now() - lastCheck > 2 * 6e4) freshRates(); });
+  window.addEventListener('focus', () => { if (Date.now() - lastCheck > 2 * 6e4) freshRates(); });
+  // Bounded polling ensures announcements show up even when the app remains open.
+  setInterval(() => { if (!document.hidden && Date.now() - lastCheck > 2 * 6e4) freshRates(); }, 3 * 6e4);
 
   const srcLine = () => {
     const bits = [];
@@ -132,7 +145,7 @@
   /* Live notices straight from the Bank: newest rate announcement, a warning if prime hasn't followed the policy rate, official links. */
   function bocLive() {
     const out = [], a = ANN && ANN[0];
-    if (SPREAD && SPREAD.mismatch) {
+    if (SPREAD && SPREAD.mismatch && !(RATES?.policyAnnouncement && RATES.policyAnnouncement.date === new Date().toISOString().slice(0,10))) {
       out.push(`<div class="ec8-warn"><b>Heads up: the Bank\u2019s policy rate and banks\u2019 prime are out of step.</b> The Bank\u2019s policy rate is <b>${pc(SPREAD.policy, 2)}</b> (as of ${fmtDay(SPREAD.policyDate)}) but prime is still <b>${pc(SPREAD.prime, 2)}</b>. Prime normally sits ${SPREAD.typical.toFixed(2)} points above the policy rate, so it should move to about <b>${pc(SPREAD.expectedPrime, 2)}</b>, usually within days. Variable payments follow your lender\u2019s prime.</div>`);
     }
     if (a && a.date) {
