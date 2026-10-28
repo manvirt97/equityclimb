@@ -36,7 +36,7 @@ test('installed PWA loads only the new decision module, with updated cache',()=>
  assert.ok(html.includes('ec-v16-5.js?v=16.5'));
  assert.ok(html.includes('ec-v16-5.css?v=16.5'));
  assert.ok(html.indexOf('ec-v16-3.js')<html.indexOf('ec-v16-5.js'));
- assert.ok(sw.includes('eq-v16-6-boc-hotfix'));
+ assert.ok(sw.includes('eq-v16-7-prime-announcement'));
  for(const name of ['ec-v16-5.js','ec-v16-5.css'])assert.ok(sw.includes(name));
 });
 test('owner-entered properties only; existing licensed-feed IDs are not reused',()=>{
