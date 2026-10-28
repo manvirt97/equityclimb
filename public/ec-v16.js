@@ -150,7 +150,11 @@
       if(oldNote)oldNote.innerHTML='Rates unavailable. <button type="button" onclick="loadRates(true)">Refresh</button>';
       const w=document.createElement('div');w.append(t.content);return w.innerHTML;
     } // Retain the watchlist even if current rates are unavailable.
-    const series=[['Prime',RATES?.prime],[RATES?.policy?.announced?'BoC policy · announced':'BoC policy',RATES?.policy],['5-year bond',RATES?.bond5],['5-year posted',RATES?.fiveYearPosted]];
+    const primeNext=RATES?.primeAnnouncement;
+    // Prominently show the bank-confirmed next prime rate without applying it to today's mortgage math prematurely.
+    const primeDisplay=primeNext && Number.isFinite(+primeNext.value) && primeNext.effectiveDate>=RATES?.prime?.date ? primeNext : RATES?.prime;
+    const primeLabel=primeNext&&primeDisplay===primeNext?'Bank prime · '+E(primeNext.effectiveDate)+' effective':'Bank prime';
+    const series=[[primeLabel,primeDisplay],[RATES?.policy?.announced?'BoC policy · announced':'BoC policy',RATES?.policy],['5-year bond',RATES?.bond5],['5-year posted',RATES?.fiveYearPosted]];
     const rows=series.filter(([_,r])=>Number.isFinite(N(r?.value,NaN))).map(([label,r])=>`<div class="card flat kpi"><div class="l">${E(label)}</div><div class="v">${N(r.value).toFixed(2)}%</div></div>`).join('');
     if(rows){block.className='grid ec8-rates ec16-rates';block.innerHTML=rows;}
     for(const element of [...t.content.querySelectorAll('.ec8-ratesline,.ec8-ann,.ec8-official,.ec8-warn,.ec8-boc')])element.remove();
@@ -163,6 +167,15 @@
       bulletin.innerHTML=`<strong>Bank of Canada policy decision: ${N(decision.value).toFixed(2)}% <span>announced ${E(decision.date)}</span></strong><p>Effective ${E(decision.effectiveDate||'next business day')} · Latest reported bank prime: ${RATES?.prime?N(RATES.prime.value).toFixed(2)+'% (observation '+E(RATES.prime.date||'unknown')+')':'not yet available'}. The prime rate is set by banks and may update separately. <a href="${E(decision.sourceUrl||'https://www.bankofcanada.ca/core-functions/monetary-policy/key-interest-rate/')}" target="_blank" rel="noopener noreferrer">Official Bank of Canada source ↗</a></p>`;
       block.after(bulletin);bulletin.after(detail);
     } else block.after(detail);
+    if (primeNext && /^\\d{4}-\\d{2}-\\d{2}$/.test(primeNext.effectiveDate||'') && Number.isFinite(+primeNext.value)) {
+      const notice=document.createElement('div');notice.className='ec16-prime-announcement';
+      const older=RATES?.primeObserved||RATES?.prime;
+      const torontoDate=new Intl.DateTimeFormat('en-CA',{timeZone:'America/Toronto',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+      const pending=torontoDate<primeNext.effectiveDate;
+      const nowText=pending?'Today\u2019s effective prime remains '+(older?N(older.value).toFixed(2)+'%':'unverified')+'.':'The announced prime rate is now effective.';
+      notice.innerHTML=`<strong>Confirmed major-bank prime: ${N(primeNext.value).toFixed(2)}%</strong> <span>${pending?'Announced for':'Effective'} ${E(primeNext.effectiveDate)}</span><p>${E(nowText)} ${E(primeNext.lender||'A major Canadian bank')} confirmed this change. The Bank of Canada's weekly prime series can lag official lender updates. <a href="${E(primeNext.sourceUrl)}" target="_blank" rel="noopener noreferrer">Official lender announcement ↗</a></p>`;
+      block.after(notice);
+    }
     const holder=document.createElement('div');holder.append(t.content);return holder.innerHTML;
  };
  const olderPaint=window.EC8_PAINT;
