@@ -55,8 +55,13 @@ async function loadRates(force) {
   if (j.error) { // fallback: call Bank of Canada directly from the browser
     try {
       const r = await fetch('https://www.bankofcanada.ca/valet/observations/V80691311,V39079/json?recent=10').then(r => r.json());
-      const ob = r.observations, last = ob[ob.length - 1], first = ob[0];
-      j = { source: 'Bank of Canada', prime: { value: +last.V80691311.v, date: last.d, change: +(last.V80691311.v - first.V80691311.v).toFixed(2) }, policy: { value: +last.V39079.v, date: last.d, change: +(last.V39079.v - first.V39079.v).toFixed(2) } };
+      const latest = id => {
+        const rows = (r.observations || []).filter(o => o[id] && o[id].v !== '' && Number.isFinite(+o[id].v)).sort((a,b)=>a.d.localeCompare(b.d));
+        if (!rows.length) return null;
+        const last=rows[rows.length-1],first=rows[0];
+        return { value:+last[id].v, date:last.d, change:+(+last[id].v - +first[id].v).toFixed(2) };
+      };
+      j = { source: 'Bank of Canada (direct fallback)', prime:latest('V80691311'), policy:latest('V39079') };
     } catch { j = null; }
   }
   if (j && j.prime) { RATES = j; cache.set('rates', j); }
