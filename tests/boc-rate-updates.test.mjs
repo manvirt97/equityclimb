@@ -106,7 +106,7 @@ test('rate refresh and market disclosure are automatic, without touching Home da
  assert.match(staticJs,/setInterval\(\(\) => \{ if \(!document\.hidden/);
  assert.match(marketJs,/ec16-boc-bulletin/);
  assert.match(marketJs,/Bank of Canada policy decision/);
- assert.match(marketJs,/Prime rate is set by banks/);
+ assert.match(marketJs,/prime rate is set by banks/i);
  assert.match(updateJs,/\/api\/boc\?fresh=1/);
  assert.match(sw,/eq-v16-6-boc-hotfix/);
 });
