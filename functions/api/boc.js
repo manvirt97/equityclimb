@@ -178,7 +178,7 @@ export function parsePrimeRelease(html, meta) {
   if (!PRIME_RELEASES.some(x => x.url === meta?.url && x.lender === meta?.lender && x.date === meta?.date)) return null;
   const words=stripTags(html);
   if(!/prime\s+(?:lending\s+)?rate/i.test(words))return null;
-  const valueMatch=words.match(/\bprime\s+(?:lending\s+)?rate[\s\S]{0,135}?\bto\s+(\d{1,2}(?:\.\d{1,3})?)\s*(?:%|per\s+cent)\b/i);
+  const valueMatch=words.match(/\bprime\s+(?:lending\s+)?rate[\s\S]{0,135}?\bto\s+(\d{1,2}(?:\.\d{1,3})?)\s*(?:%|per\s+cent)(?=\W|$)/i);
   const effect=words.match(/\beffective\s+(?:on\s+)?(January|February|March|April|May|June|July|August|September|October|November|December)\s+(\d{1,2}),?\s+(\d{4})\b/i);
   if(!valueMatch||!effect)return null;
   const value=Number(valueMatch[1]),effectiveDate=calendarDate(effect[3],effect[1],effect[2]);
