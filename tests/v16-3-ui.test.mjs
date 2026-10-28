@@ -23,6 +23,6 @@ test('fixed-white v16.1 surfaces have dark theme-specific overrides',()=>{
 test('cache bumps and styles/scripts are included after older versions',()=>{
  assert.ok(html.includes('ec-v16-3.css?v=16.3'));
  assert.ok(html.includes('ec-v16-3.js?v=16.3'));
- assert.match(sw,/eq-v16-5-decision-journey/);
+ assert.match(sw,/eq-v16-6-boc-hotfix/);
  assert.ok(sw.includes('ec-v16-3.css'));assert.ok(sw.includes('ec-v16-3.js'));
 });
