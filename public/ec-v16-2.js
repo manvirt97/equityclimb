@@ -35,7 +35,7 @@ function prefetchTasks(){
  const opts=S.ec7?.market||{scope:'local',cat:'all'};
  const tasks=[];
  tasks.push({title:'Canadian rules',fn:async()=>{const j=await getJSON('/api/rules?year='+new Date().getFullYear());if(j.year){put('rules7_'+j.year,j);}return j;}});
- tasks.push({title:'Mortgage rates',fn:async()=>{const j=await getJSON('/api/rates');if(!j.prime)throw Error('Rates unavailable');put('rates',j);RATES=j;applyRates();}});
+ tasks.push({title:'Mortgage rates',fn:async()=>{const j=await getJSON('/api/boc?fresh=1&_='+Date.now());if(!j.prime&&!j.policy)throw Error('Rates unavailable');const merged={...(RATES||{}),...j};put('rates',merged);RATES=merged;applyRates();}});
  // Prepare each geography tab and each topic tab, without making AI queries or overwriting user data.
  const pairs=new Map();const add=(scope,category)=>pairs.set(scope+'_'+category,[scope,category]);
  geos.forEach(s=>add(s,'all'));
