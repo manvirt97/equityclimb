@@ -22,5 +22,5 @@ test('bottom navigation is present and visible for phone widths', () => {
 test('mobile shortcuts do not obscure app content and cache gets a fresh version', () => {
   assert.match(css15, /#ec8-ask,\.ec-news-key-button\s*\{\s*display\s*:\s*none\s*!important/);
   assert.match(index, /ec-v15-2\.css\?v=15\.2/);
-  assert.match(sw, /eq-v16-7-1-prime-ui-refresh/);
+  assert.match(sw, /eq-v16-7-2-prime-consistency/);
 });
