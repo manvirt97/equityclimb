@@ -68,9 +68,23 @@ async function loadRates(force) {
   applyRates(); render();
 }
 function applyRates() {
-  if (S.rateMode === 'Live' && S.rtype === 'Variable' && RATES?.prime) { const r = +(RATES.prime.value + +S.adj).toFixed(2); if (r !== S.rate) { S.rate = r; save(); } }
+  if (S.rateMode !== 'Live' || S.rtype !== 'Variable') return;
+  // Use the newly confirmed lender prime on its EFFECTIVE date, not only
+  // the BoC's delayed weekly statistical observation.
+  const verified = window.ECMortgageModes?.officialPrime(RATES) || RATES?.prime;
+  if (!verified || !Number.isFinite(+verified.value) || !Number.isFinite(+S.adj)) return;
+  const rate = +(+verified.value + +S.adj).toFixed(2);
+  if (rate < 0 || rate > 30) return;
+  let changed = rate !== S.rate;
+  if (changed) S.rate = rate;
+  // Optional, explicit user choice only. Leave independent property assumptions untouched by default.
+  if (S.ecMortgage?.linkProperty && S.ec13?.calc && +S.ec13.calc.rate !== rate) {
+    S.ec13.calc.rate = rate;
+    changed = true;
+  }
+  if (changed) save();
 }
-const prime = () => RATES?.prime?.value;
+const prime = () => (window.ECMortgageModes?.officialPrime(RATES) || RATES?.prime)?.value;
 
 /* ---------------------------------------------------------------- finance engine (Canadian compounding) */
 const per = (rate, type = S.rtype) => { const r = rate / 100; return type === 'Fixed' ? Math.pow(1 + r / 2, 1 / 6) - 1 : r / 12; };
