@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {parsePrimeRelease,parseTdPostedPrime,resolvePrime,onRequestGet} from '../functions/api/boc.js';
+import {parsePrimeRelease,parseTdPostedPrime,resolvePrime,discoverTdPrimeReleases,onRequestGet} from '../functions/api/boc.js';
 const RBC={ lender:'RBC Royal Bank',date:'2026-10-28',url:'https://www.rbc.com/newsroom/article.html?article=126172' };
 const TD={ lender:'TD Canada Trust',date:'2026-10-28',url:'https://td.mediaroom.com/2026-10-28-TD-Canada-Trust-announces-change-to-TD-Prime-Rate' };
 const rbcText='<article>RBC Royal Bank is increasing its prime rate by 25 basis points from 4.45 per cent to 4.70 per cent, effective October 29, 2026.</article>';
@@ -20,6 +20,16 @@ test('parse only lender-authored confirmed prime announcements, not inferred pol
  assert.equal(parsePrimeRelease('Prime expected to reach 4.70%',RBC),null);
  assert.equal(parsePrimeRelease(rbcText,{...RBC,url:'https://example.com/spoof'}),null);
  assert.equal(parsePrimeRelease('Bank of Canada policy rate to 2.50%',TD),null);
+});
+test('future TD official lender releases are discovered without hardcoded URLs',()=>{
+ const html='<a href="/2027-01-27-TD-Canada-Trust-announces-change-to-TD-Prime-Rate">Change to prime</a><a href="https://example.com/2027-01-27-TD-Canada-Trust-announces-change-to-TD-Prime-Rate">Other</a>';
+ const found=discoverTdPrimeReleases(html);
+ assert.equal(found.length,1);
+ assert.equal(found[0].url,'https://td.mediaroom.com/2027-01-27-TD-Canada-Trust-announces-change-to-TD-Prime-Rate');
+ const future=parsePrimeRelease('TD Canada Trust today announced that it increased its TD Prime Rate to 4.95%, effective January 28, 2027.',found[0]);
+ assert.equal(future?.value,4.95);
+ assert.equal(future.effectiveDate,'2027-01-28');
+ assert.equal(parsePrimeRelease('TD Prime Rate to 4.95%, effective January 28, 2027.',{...found[0],url:'https://example.com/spoof'}),null);
 });
 test('posted TD website supports rate updates independently of one-off lender release',()=>{
  const site='<table><tr><td>TD Prime Rate</td><td>4.45%</td><td>Oct 30, 2025</td></tr></table>';
@@ -91,12 +101,12 @@ test('render and cache are restricted to rate widgets; no Home or Shortlist over
  assert.match(v16,/Confirmed by \$\{E\(primeNext\.lender/);
  const app=readFileSync(new URL('../public/app.js',import.meta.url),'utf8');
  assert.match(app,/RATES\?\.primeAnnouncement\?\.confirmed/);
- assert.match(index,/app\.js\?v=16\.8\.0/);
+ assert.match(index,/app\.js\?v=16\.9/);
  assert.match(index,/ec-v10\.js\?v=16\.7\.2/);
  assert.match(v16,/Confirmed major-bank prime/);
  assert.match(v16,/primeDisplay/);
  assert.match(index,/ec-v16\.js\?v=16\.7\.2/);
- assert.match(sw,/eq-v16-8-ios-update/);
+ assert.match(sw,/eq-v16-9-rate-integrity/);
  const main=readFileSync(new URL('../public/ec-v16-5.js',import.meta.url),'utf8');
  assert.doesNotMatch(main,/V\.home\s*=/);
 });

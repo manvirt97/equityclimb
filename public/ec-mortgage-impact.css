@@ -1,0 +1,28 @@
+/* Contract-specific mortgage scenarios; no changes to Home or Shortlist design. */
+.ec-mortgage-impact{margin-bottom:20px;display:grid;gap:15px}
+.ec-mortgage-impact>h2{font-size:19px;margin:0}
+.ec-mortgage-impact p{margin:0;font-size:12.5px;line-height:1.6;color:var(--ink2)}
+.ec-mortgage-source{border:1px solid var(--line2);border-radius:12px;padding:13px 15px;background:var(--surface2);display:block}
+.ec-mortgage-source strong{color:var(--ink);font-size:12.5px}
+.ec-mortgage-source p{margin:5px 0 7px}
+.ec-mortgage-source button{margin:6px 10px 0 0}
+.ec-mortgage-source a{font-size:12px;color:var(--accent);text-underline-offset:3px}
+.ec-mortgage-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.ec-mortgage-choices button{border:1px solid var(--line2);border-radius:11px;padding:12px 14px;text-align:left;background:var(--surface2);color:var(--ink);cursor:pointer;font-size:12.5px;font-weight:650;line-height:1.5}
+.ec-mortgage-choices button.selected{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);background:var(--surface)}
+.ec-mortgage-inputs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:end}
+.ec-mortgage-inputs label{display:grid;gap:7px;font-size:12px;color:var(--ink2)}
+.ec-mortgage-inputs input{max-width:100%;min-height:39px}
+.ec-mortgage-results{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.ec-mortgage-results>div{border:1px solid var(--line2);background:var(--surface2);padding:13px;border-radius:11px;display:flex;flex-direction:column;gap:5px}
+.ec-mortgage-results span{color:var(--ink2);font-size:11px;line-height:1.4}
+.ec-mortgage-results strong{color:var(--ink);font-size:20px;line-height:1.25}
+.ec-mortgage-results small{color:var(--ink2);font-size:10.5px;line-height:1.5}
+.ec-mortgage-impact .ec-mortgage-caution{border-left:3px solid var(--warn);padding:10px;background:var(--surface2);border-radius:7px;color:var(--ink)}
+.ec-mortgage-link{display:flex;align-items:flex-start;gap:9px;font-size:12px;line-height:1.55;color:var(--ink);cursor:pointer}
+.ec-mortgage-link input{margin-top:3px;flex:none;accent-color:var(--accent)}
+.ec-mortgage-link small{color:var(--ink2);font-size:11px}
+.ec-mortgage-impact .ec-mortgage-disclaimer{font-size:11px;border-top:1px solid var(--line);padding-top:11px}
+.ec-mortgage-impact button:focus-visible,.ec-mortgage-impact input:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+@media(max-width:650px){.ec-mortgage-choices,.ec-mortgage-results{grid-template-columns:1fr}.ec-mortgage-inputs{grid-template-columns:1fr}.ec-mortgage-results>div{padding:12px}.ec-mortgage-impact{gap:11px}}
+@media(prefers-reduced-motion:reduce){.ec-mortgage-impact *{transition:none!important;animation:none!important}}

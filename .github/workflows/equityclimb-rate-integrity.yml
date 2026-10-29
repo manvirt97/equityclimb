@@ -1,0 +1,21 @@
+name: EquityClimb production rate integrity
+on:
+  schedule:
+    # Twice daily, including after typical BoC announcements (UTC).
+    - cron: '30 14,22 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-live-rates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out integrity checker
+        uses: actions/checkout@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Verify public Bank of Canada and bank-prime rates
+        run: node scripts/check-live-rate-integrity.mjs
