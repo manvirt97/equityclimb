@@ -1,0 +1,19 @@
+name: EquityClimb public finance data audit
+on:
+  schedule:
+    # Twice daily; cloud functions are checked independently from browser cache.
+    - cron: '45 13,22 * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  data-integrity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Audit rates, tax rules, market quotes, news and MLS status
+        run: node scripts/audit-public-data.mjs

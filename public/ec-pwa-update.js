@@ -2,7 +2,7 @@
  * Does not modify financial data, account sync, routes, or view layouts. */
 (()=>{
  'use strict';
- const BUILD='16.9.0', META='/release.json', SW='./sw.js';
+ const BUILD='16.10.0', META='/release.json', SW='./sw.js';
  let lastCheck=0, checking=null, announced='', activationSeen=false, reg=null;
  const navSW=navigator.serviceWorker;
  const hadController=!!navSW?.controller;

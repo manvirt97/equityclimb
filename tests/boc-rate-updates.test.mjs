@@ -116,5 +116,5 @@ test('rate refresh and market disclosure are automatic, without touching Home da
  assert.match(marketJs,/Bank of Canada policy decision/);
  assert.match(marketJs,/prime rate is set by banks/i);
  assert.match(updateJs,/\/api\/boc\?fresh=1/);
- assert.match(sw,/eq-v16-9-rate-integrity/);
+ assert.match(sw,/eq-v16-10-finance-audit/);
 });

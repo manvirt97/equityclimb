@@ -150,9 +150,13 @@
     const x = editing ? `<button class="ec10-x" data-s="${E(w.s)}" onclick="EC10.remove(this.dataset.s)" aria-label="Remove ${E(w.n || w.s)}">\u00D7</button>` : '';
     if (!q || !isFinite(+q.value)) return `<div class="card flat kpi ec10-tile"><div class="l">${E(w.n || w.s)} <span class="ec10-sym">${E(w.s)}</span>${x}</div><div class="v mute">\u2014</div><div class="h">No price yet</div></div>`;
     const pctv = q.changePct == null ? null : +q.changePct, up = (pctv || 0) >= 0, cur0 = q.currency && q.currency !== 'CAD' ? ` <span class="ec10-cur">${E(q.currency)}</span>` : '';
+    const ts=Number(q.time), validTime=Number.isFinite(ts)&&ts>0&&ts<=Date.now()+300000;
+    const age=validTime?(Date.now()-ts)/60000:Infinity;
+    const stamp=validTime?new Date(ts).toLocaleString('en-CA',{timeZone:'UTC',year:'numeric',month:'short',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false})+' UTC':'timestamp unavailable';
+    const asof='<div class="ec10-quote-asof">'+E(q.provider||'Market data vendor')+' · '+E(stamp)+(age>15?' · delayed/last close':'')+'</div>';
     return `<div class="card flat kpi ec10-tile"><div class="l">${E(w.n || q.name || w.s)} <span class="ec10-sym">${E(w.s)}</span>${x}</div>
       <div class="v">${fmtPrice(q.value)}${cur0}</div>
-      <div class="h">${pctv == null || !isFinite(pctv) ? '' : `<span class="delta ${up ? 'pos' : 'neg'}">${up ? '\u25B2' : '\u25BC'} ${Math.abs(pctv).toFixed(2)}%</span> `}${q.open ? '<span class="tag pos">Open</span>' : '<span class="tag" title="Markets are closed, so the price shows the last close">Closed</span>'}</div></div>`;
+      <div class="h">${pctv == null || !isFinite(pctv) ? '' : `<span class="delta ${up ? 'pos' : 'neg'}">${up ? '\u25B2' : '\u25BC'} ${Math.abs(pctv).toFixed(2)}%</span> `}${q.open ? '<span class="tag pos">Open</span>' : '<span class="tag" title="Markets are closed, so the price shows the last close">Closed</span>'}</div>${asof}</div>`;
   }
   function wlHtml() {
     const w = st().watch, by = {}; ((Q && Q.items) || []).forEach(i => { by[i.symbol] = i; });

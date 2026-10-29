@@ -25,7 +25,7 @@ async function yahoo(sym) {
   } else if (m.previousClose != null) prev = +m.previousClose;
   const p = m.currentTradingPeriod && m.currentTradingPeriod.regular, t = Date.now() / 1000;
   const open = m.instrumentType === 'CRYPTOCURRENCY' ? true : p ? t >= p.start && t <= p.end : false;
-  return { symbol: sym, name: NAMES[sym] || m.shortName || m.longName || sym, value: price, prev, currency: m.currency || '', exchange: m.exchangeName || '', open, time: (m.regularMarketTime || 0) * 1000 };
+  return { symbol: sym, name: NAMES[sym] || m.shortName || m.longName || sym, value: price, prev, currency: m.currency || '', exchange: m.exchangeName || '', open, time: m.regularMarketTime ? m.regularMarketTime * 1000 : null, provider: 'Yahoo Finance' };
 }
 async function stooq(sym) {
   const s = STOOQ[sym] || (/^[A-Z]{1,5}$/.test(sym) ? sym.toLowerCase() + '.us' : null);
@@ -35,7 +35,8 @@ async function stooq(sym) {
   const row = (await r.text()).trim().split('\n')[1] || '', c = row.split(',');
   const close = +c[6], prev = +c[7];
   if (!isFinite(close) || !close) throw new Error('stooq empty');
-  return { symbol: sym, name: NAMES[sym] || sym, value: close, prev: isFinite(prev) && prev ? prev : null, currency: '', exchange: '', open: false, time: Date.parse(c[1] + 'T' + (c[2] || '16:00:00') + 'Z') || Date.now() };
+  return { symbol: sym, name: NAMES[sym] || sym, value: close, prev: isFinite(prev) && prev ? prev : null, currency: '', exchange: '', open: false, // A missing vendor timestamp is unknown, NOT evidence of a live trade.
+    time: Number.isFinite(Date.parse(c[1] + 'T' + (c[2] || '16:00:00') + 'Z')) ? Date.parse(c[1] + 'T' + (c[2] || '16:00:00') + 'Z') : null, provider: 'Stooq (fallback)' };
 }
 async function search(q) {
   const r = await fetch(`https://query1.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(q)}&quotesCount=10&newsCount=0&listsCount=0`, { headers: UA });
@@ -68,9 +69,11 @@ export async function onRequestGet(ctx) {
   const got = await Promise.all(symbols.map(async s => { try { return await yahoo(s); } catch (_) { try { return await stooq(s); } catch (_) { return null; } } }));
   const items = got.filter(Boolean).map(q => {
     const change = q.prev ? q.value - q.prev : null;
-    return { symbol: q.symbol, name: q.name, value: +q.value.toFixed(q.value < 10 ? 4 : 2), change: change == null ? null : +change.toFixed(4), changePct: change == null ? null : +(change / q.prev * 100).toFixed(2), currency: q.currency, exchange: q.exchange, open: q.open, time: q.time };
+    return { symbol: q.symbol, name: q.name, value: +q.value.toFixed(q.value < 10 ? 4 : 2), change: change == null ? null : +change.toFixed(4), changePct: change == null ? null : +(change / q.prev * 100).toFixed(2), currency: q.currency, exchange: q.exchange, open: q.open, time: q.time, provider: q.provider,
+      timestampVerified: Number.isFinite(q.time) && q.time > 0 && q.time <= Date.now() + 5*60*1000,
+      delayed: !Number.isFinite(q.time) || q.time <= 0 || Date.now()-q.time > 15*60*1000 };
   });
-  const body = JSON.stringify({ items, missing: symbols.filter(s => !items.some(i => i.symbol === s)), fetched: Date.now(), note: 'Prices can be delayed 15+ minutes.' });
+  const body = JSON.stringify({ items, missing: symbols.filter(s => !items.some(i => i.symbol === s)), fetched: Date.now(), note: 'Quotes may be delayed. Verify per-symbol as-of timestamps and exchange currencies; not an execution feed.' });
   if (items.length) ctx.waitUntil(cache.put(key, new Response(body, { headers: { 'content-type': 'application/json', 'cache-control': 'public, max-age=60' } })));
   return new Response(body, { headers: { 'content-type': 'application/json', 'cache-control': 'no-store' } });
 }

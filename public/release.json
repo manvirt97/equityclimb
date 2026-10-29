@@ -1,5 +1,5 @@
 {
-  "version": "16.9.0",
+  "version": "16.10.0",
   "released": "2026-10-28",
-  "changes": "Mortgage interest-rate audit, effective-date prime sync, adjustable and fixed-payment scenarios"
+  "changes": "Financial calculations and live-data integrity audit: tax, insured mortgages, news dates, quote as-of labels and Settings source checks"
 }

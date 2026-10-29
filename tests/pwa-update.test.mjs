@@ -5,7 +5,7 @@ import vm from 'node:vm';
 const read=n=>readFileSync(new URL('../public/'+n,import.meta.url),'utf8');
 const updater=read('ec-pwa-update.js'),sw=read('sw.js'),index=read('index.html'),headers=read('_headers'),release=JSON.parse(read('release.json'));
 test('iPhone updater is bootstrapped ahead of the app and installs network revalidation',()=>{
- assert.ok(index.indexOf('ec-pwa-update.js?v=16.9.0')<index.indexOf('app.js?v=16.9'));
+ assert.ok(index.indexOf('ec-pwa-update.js?v=16.10.0')<index.indexOf('app.js?v=16.10'));
  assert.match(read('app.js'),/serviceWorker\.register\('sw\.js',\{updateViaCache:'none'\}\)/);
  assert.match(updater,/navSW\.register\(SW,\{updateViaCache:'none'\}\)/);
  assert.match(updater,/addEventListener\('visibilitychange'/);
@@ -13,7 +13,7 @@ test('iPhone updater is bootstrapped ahead of the app and installs network reval
  assert.match(updater,/addEventListener\('online'/);
 });
 test('PWA install must have a working shell; updates do not clear localStorage or account data',()=>{
- assert.equal(release.version,'16.9.0');
+ assert.equal(release.version,'16.10.0');
  assert.match(sw,/await cache\.add\(new Request\('\.\/index\.html',\{cache:'no-store'\}\)\)/);
  assert.match(sw,/name\.startsWith\('eq-'\)/);
  assert.doesNotMatch(updater+sw,/localStorage\.(clear|removeItem)|indexedDB\.deleteDatabase/);
@@ -50,7 +50,7 @@ test('phone update prompt can refresh the page without deleting or renaming save
  const window={setInterval:()=>{},addEventListener(name,cb){events[name]=cb;}};
  const storage={setItem:(k,v)=>writes.push([k,v]),getItem:()=>null};
  vm.runInNewContext(updater,{window,document,navigator:{serviceWorker:swClient,onLine:true},location,
-    sessionStorage:storage,fetch:async url=>{fetched.push(url);return {ok:true,json:async()=>({version:'16.10.0'})};},
+    sessionStorage:storage,fetch:async url=>{fetched.push(url);return {ok:true,json:async()=>({version:'16.11.0'})};},
     URL,Date,Error,Number,String,Math,Promise,console});
  await new Promise(resolve=>setImmediate(resolve));
  assert.ok(fetched.some(s=>s.includes('/release.json')));
@@ -60,7 +60,7 @@ test('phone update prompt can refresh the page without deleting or renaming save
  assert.equal(replaced.length,0,'financial inputs must not disappear via unsolicited reload');
  notice.children[1].listeners.click();
  assert.equal(replaced.length,1);
- assert.match(replaced[0],/ec_build=16\.10\.0/);
+ assert.match(replaced[0],/ec_build=16\.11\.0/);
  assert.match(replaced[0],/#market$/);
  assert.deepEqual(writes.map(([k])=>k),['ec_update_requested']);
 });
