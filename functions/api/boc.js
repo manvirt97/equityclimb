@@ -167,6 +167,27 @@ const PRIME_RELEASES = [
   { lender: 'TD Canada Trust', date: '2026-10-28', url: 'https://td.mediaroom.com/2026-10-28-TD-Canada-Trust-announces-change-to-TD-Prime-Rate' }
 ];
 const TD_POSTED_PRIME = 'https://www.td.com/ca/en/personal-banking/products/todays-rates-and-prime';
+
+const TD_PRESS_INDEX='https://td.mediaroom.com/';
+export function discoverTdPrimeReleases(html) {
+  // Only accept TD's exact dated press-release slug; ignore arbitrary outbound URLs.
+  const rx=/((?:https:\/\/td\.mediaroom\.com)?\/?)(20\d{2}-\d{2}-\d{2})-TD-Canada-Trust-announces-change-to-TD-Prime-Rate\b/gi;
+  const found=new Map();
+  for(const match of String(html||'').matchAll(rx)) {
+    const date=match[2];
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(date))continue;
+    const url='https://td.mediaroom.com/'+date+'-TD-Canada-Trust-announces-change-to-TD-Prime-Rate';
+    found.set(url,{lender:'TD Canada Trust',date,url});
+  }
+  return [...found.values()].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,2);
+}
+function allowedPrimeRelease(meta){
+  if(PRIME_RELEASES.some(x=>x.url===meta?.url&&x.lender===meta?.lender&&x.date===meta?.date))return true;
+  return meta?.lender==='TD Canada Trust' &&
+    /^https:\/\/td\.mediaroom\.com\/20\d{2}-\d{2}-\d{2}-TD-Canada-Trust-announces-change-to-TD-Prime-Rate$/.test(meta?.url||'') &&
+    meta.date===meta.url.slice('https://td.mediaroom.com/'.length,'https://td.mediaroom.com/'.length+10);
+}
+
 function calendarDate(y, m, d) {
   const mo=MONTHS[String(m).toLowerCase().slice(0,3)]||Object.entries(MONTHS).find(([name])=>name.startsWith(String(m).toLowerCase().slice(0,3)))?.[1];
   const day=Number(d),year=Number(y);
@@ -175,7 +196,7 @@ function calendarDate(y, m, d) {
   return date.getUTCFullYear()===year && date.getUTCMonth()===mo-1 && date.getUTCDate()===day ? date.toISOString().slice(0,10) : null;
 }
 export function parsePrimeRelease(html, meta) {
-  if (!PRIME_RELEASES.some(x => x.url === meta?.url && x.lender === meta?.lender && x.date === meta?.date)) return null;
+  if (!allowedPrimeRelease(meta)) return null;
   const words=stripTags(html);
   if(!/prime\s+(?:lending\s+)?rate/i.test(words))return null;
   const valueMatch=words.match(/\bprime\s+(?:lending\s+)?rate[\s\S]{0,135}?\bto\s+(\d{1,2}(?:\.\d{1,3})?)\s*(?:%|per\s+cent)(?=\W|$)/i);
@@ -212,7 +233,15 @@ export function resolvePrime(observed, confirmed, asOf) {
   };
 }
 async function latestConfirmedPrime() {
+  // Dynamic official lender news discovery means later prime decisions do NOT need a code release.
+  // A live posted rate is a fallback if a new press release has not yet appeared or is unavailable.
   const work=[
+    getText(TD_PRESS_INDEX,6000).then(async html=>{
+      const list=discoverTdPrimeReleases(html);
+      if(!list.length)return null;
+      const read=await Promise.allSettled(list.map(meta=>getText(meta.url,6000).then(page=>parsePrimeRelease(page,meta))));
+      return read.filter(x=>x.status==='fulfilled'&&x.value).map(x=>x.value).sort((a,b)=>b.effectiveDate.localeCompare(a.effectiveDate))[0]||null;
+    }),
     ...PRIME_RELEASES.map(async meta=>parsePrimeRelease(await getText(meta.url,6000),meta)),
     getText(TD_POSTED_PRIME,6000).then(parseTdPostedPrime)
   ];
