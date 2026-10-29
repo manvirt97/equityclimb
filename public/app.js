@@ -51,7 +51,10 @@ const ic = (n, cls = '') => `<svg class="${cls}" viewBox="0 0 24 24" fill="none"
 let RATES = cache.get('rates', 24 * 60) || null;
 async function loadRates(force) {
   if (RATES && !force && cache.get('rates', 60)) return applyRates();
-  let j = await api('/api/rates').catch(() => ({ error: 1 }));
+  // Prefer announcement-aware policy and lender-prime data, not retrospective
+  // daily/weekly observations that can be behind a confirmed rate decision.
+  let j = await api('/api/boc?fresh=1&_=' + Date.now(), { cache: 'no-store' }).catch(() => ({ error: 1 }));
+  if (j.error || (!j.prime && !j.policy)) j = await api('/api/rates?fresh=1', { cache: 'no-store' }).catch(() => ({ error: 1 }));
   if (j.error) { // fallback: call Bank of Canada directly from the browser
     try {
       const r = await fetch('https://www.bankofcanada.ca/valet/observations/V80691311,V39079/json?recent=10').then(r => r.json());
@@ -64,7 +67,13 @@ async function loadRates(force) {
       j = { source: 'Bank of Canada (direct fallback)', prime:latest('V80691311'), policy:latest('V39079') };
     } catch { j = null; }
   }
-  if (j && j.prime) { RATES = j; cache.set('rates', j); }
+  if (j && (j.prime || j.policy)) {
+    // A failed primary source is not evidence that an older weekly observation is the newest lender announcement.
+    if (!j.primeAnnouncement && RATES?.primeAnnouncement?.confirmed &&
+        String(RATES.primeAnnouncement.effectiveDate||'')>=String(j.prime?.date||''))
+      j.primeAnnouncement = RATES.primeAnnouncement;
+    RATES = j; cache.set('rates', j);
+  }
   applyRates(); render();
 }
 function applyRates() {
