@@ -85,10 +85,13 @@ test('render and cache are restricted to rate widgets; no Home or Shortlist over
  const index=readFileSync(new URL('../public/index.html',import.meta.url),'utf8');
  const sw=readFileSync(new URL('../public/sw.js',import.meta.url),'utf8');
  assert.match(v8,/merged\.primeAnnouncement=S1\.primeAnnouncement/);
+ const marketRefresh=readFileSync(new URL('../public/ec-v10.js',import.meta.url),'utf8');
+ assert.match(marketRefresh,/el\.innerHTML=root \? root\.innerHTML : updated/);
+ assert.match(index,/ec-v10\.js\?v=16\.7\.1/);
  assert.match(v16,/Confirmed major-bank prime/);
  assert.match(v16,/primeDisplay/);
  assert.match(index,/ec-v16\.js\?v=16\.7/);
- assert.match(sw,/eq-v16-7-prime-announcement/);
+ assert.match(sw,/eq-v16-7-1-prime-ui-refresh/);
  const main=readFileSync(new URL('../public/ec-v16-5.js',import.meta.url),'utf8');
  assert.doesNotMatch(main,/V\.home\s*=/);
 });
