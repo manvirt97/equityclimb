@@ -1,6 +1,6 @@
 {
   "name": "equityclimb",
-  "version": "16.7.1",
+  "version": "16.7.2",
   "private": true,
   "type": "module",
   "description": "Cloudflare Pages PWA; no production npm build step",
