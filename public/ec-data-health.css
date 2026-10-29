@@ -1,0 +1,15 @@
+/* Financial source integrity panel — Settings only, theme-aware. */
+.ec-health{margin-top:18px;display:grid;gap:12px}
+.ec-health-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.ec-health-head h2{margin:0;font-size:18px}
+.ec-health-head p,.ec-health-disclaimer{font-size:12px;line-height:1.5;color:var(--ink2)}
+.ec-health-head p{margin-top:6px}
+.ec-health-head button{flex:none}
+.ec-health-status{font-size:12px;color:var(--ink2);margin:0}
+.ec-health-row{display:grid;grid-template-columns:minmax(120px,1fr) minmax(100px,.75fr);gap:3px 12px;border-top:1px solid var(--line2);padding:10px 0;align-items:start}
+.ec-health-row strong{font-size:12.5px}
+.ec-health-row span{font-size:11.5px;font-weight:700;text-align:right;color:var(--ink2)}
+.ec-health-row small{grid-column:1/-1;font-size:11px;line-height:1.5;color:var(--ink2)}
+.ec-health-disclaimer{border-top:1px solid var(--line2);padding-top:12px;margin:0}
+.ec10-quote-asof{margin-top:5px;font-size:10px;line-height:1.4;color:var(--ink2)}
+@media(max-width:700px){.ec-health-head{flex-wrap:wrap}.ec-health-head button{flex:1}.ec-health-row{grid-template-columns:1fr}.ec-health-row span{text-align:left}.ec-health-row small{grid-column:1}}
