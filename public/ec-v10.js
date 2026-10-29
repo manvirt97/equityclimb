@@ -186,7 +186,15 @@
     const el = document.getElementById('ec10-snap'); if (!el) return;
     const a = document.activeElement; if (a && a.id === 'ec10-wl-q' && a.value) { paintStatus(); return; }
     try {
-      el.innerHTML = snapInner();
+      // Always render through the CURRENT rateStrip wrapper. Later modules (v16+)
+      // decorate the rate cards, but the old snapInner() closure bypassed them
+      // every time Refresh rates & prices or quote refresh called paintSnap().
+      const updated = typeof window.rateStrip === 'function' ? window.rateStrip() : '';
+      if (updated) {
+        const t=document.createElement('template');t.innerHTML=updated;
+        const root=t.content.querySelector('#ec10-snap');
+        el.innerHTML=root ? root.innerHTML : updated;
+      } else el.innerHTML=snapInner();
       const chip = document.querySelector('.ratechip b');
       if (chip && typeof prime === 'function' && prime()) chip.textContent = pct(prime(), 2);
     } catch (err) { console.error(err); }
