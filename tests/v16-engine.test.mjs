@@ -18,13 +18,14 @@ test('CMHC standard default insurance premium is financed, not mistakenly added 
 });
 test('20% down has zero premium',()=>{
  const x=C.ownership({price:750000,down:150000,rate:5,years:25});
- assert.ok(x.insurancePremium>0,'hypothetical insurance premium must not be silently omitted');
- assert.ok(x.principal>x.price-x.down);assert.equal(x.insuranceEstimateAvailable,true);
+ assert.equal(x.insurancePremium,0);
+ assert.equal(x.principal,x.price-x.down);assert.equal(x.insuranceEstimateAvailable,true);
 });
 test('insufficient down and ineligible insured scenarios are never marked valid',()=>{
  const x=C.ownership({price:600000,down:10000,rate:5,years:25});
  assert.equal(x.downPaymentValid,false);assert.equal(x.insuranceNeedsReview,true);
- assert.equal(x.insurancePremium,0);
+ assert.ok(x.insurancePremium>0,'hypothetical insurance premium must not be silently omitted');
+ assert.ok(x.principal>x.price-x.down);
  const high=C.ownership({price:1550000,down:200000,rate:5,years:25});
  assert.equal(high.insuranceNeedsReview,true);
  assert.ok(!high.downPaymentValid);
