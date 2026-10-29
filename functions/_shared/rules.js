@@ -126,7 +126,7 @@ async function cachePut(key, data, ttl) { try { await caches.default.put(key, ne
 // Public: rules for a given tax year.
 export async function getRules(year = new Date().getFullYear()) {
   year = Math.max(BASE_YEAR, Math.min(year, BASE_YEAR + 3));
-  const key = `https://equityclimb.internal/rules/v7/${year}`;
+  const key = `https://equityclimb.internal/rules/v8-audit/${year}`;
   const hit = await cacheGet(key); if (hit) return hit;
   // Some provincial credits and QPP details are estimates even for the base year.
   let table = clone(BASE), limits = { ...BASE_LIMITS }, status = 'official_with_estimates', notes = ['2026 federal and Alberta brackets, CPP, EI and registered-account annual limits are sourced from CRA. Some provincial credits and QPP details remain estimates. Do not treat estimated net pay as a tax filing result.'], factors = {};
