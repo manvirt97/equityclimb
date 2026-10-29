@@ -101,12 +101,12 @@ test('render and cache are restricted to rate widgets; no Home or Shortlist over
  assert.match(v16,/Confirmed by \$\{E\(primeNext\.lender/);
  const app=readFileSync(new URL('../public/app.js',import.meta.url),'utf8');
  assert.match(app,/RATES\?\.primeAnnouncement\?\.confirmed/);
- assert.match(index,/app\.js\?v=16\.9/);
- assert.match(index,/ec-v10\.js\?v=16\.7\.2/);
+ assert.match(index,/app\.js\?v=16\.10/);
+ assert.match(index,/ec-v10\.js\?v=16\.10/);
  assert.match(v16,/Confirmed major-bank prime/);
  assert.match(v16,/primeDisplay/);
  assert.match(index,/ec-v16\.js\?v=16\.7\.2/);
- assert.match(sw,/eq-v16-9-rate-integrity/);
+ assert.match(sw,/eq-v16-10-finance-audit/);
  const main=readFileSync(new URL('../public/ec-v16-5.js',import.meta.url),'utf8');
  assert.doesNotMatch(main,/V\.home\s*=/);
 });
