@@ -70,7 +70,7 @@
      else output('An EquityClimb update is ready. Save your current entry, then reload.');
    });
    navSW.addEventListener('message',e=>{
-     if(e.data?.type==='EQUITYCLIMB_UPDATED'){
+     if(hadController&&e.data?.type==='EQUITYCLIMB_UPDATED'){
        output('A new EquityClimb version is ready. Reload to see the latest verified rates.');
      }
    });
