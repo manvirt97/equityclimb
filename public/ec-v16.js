@@ -155,7 +155,8 @@
     const primeDisplay=primeNext && Number.isFinite(+primeNext.value) && primeNext.effectiveDate>=RATES?.prime?.date ? primeNext : RATES?.prime;
     const primeLabel=primeNext&&primeDisplay===primeNext?'Bank prime · '+E(primeNext.effectiveDate)+' effective':'Bank prime';
     const series=[[primeLabel,primeDisplay],[RATES?.policy?.announced?'BoC policy · announced':'BoC policy',RATES?.policy],['5-year bond',RATES?.bond5],['5-year posted',RATES?.fiveYearPosted]];
-    const rows=series.filter(([_,r])=>Number.isFinite(N(r?.value,NaN))).map(([label,r])=>`<div class="card flat kpi"><div class="l">${E(label)}</div><div class="v">${N(r.value).toFixed(2)}%</div></div>`).join('');
+    const officialPrimeUrl=/^https:\/\/(?:www\.rbc\.com|td\.mediaroom\.com|www\.td\.com)\//i.test(String(primeNext?.sourceUrl||''))?primeNext.sourceUrl:null;
+    const rows=series.filter(([_,r])=>Number.isFinite(N(r?.value,NaN))).map(([label,r])=>`<div class="card flat kpi"><div class="l">${E(label)}</div><div class="v">${N(r.value).toFixed(2)}%</div>${label===primeLabel&&primeNext?`<div class="h">Confirmed by ${E(primeNext.lender||'Canadian bank')} · effective ${E(primeNext.effectiveDate)}.${RATES?.primePending&&RATES?.prime?` Previous effective rate ${N(RATES.prime.value).toFixed(2)}% until then.`:''} ${officialPrimeUrl?`<a href="${E(officialPrimeUrl)}" target="_blank" rel="noopener noreferrer">Official source</a>`:''}</div>`:''}</div>`).join('');
     if(rows){block.className='grid ec8-rates ec16-rates';block.innerHTML=rows;}
     for(const element of [...t.content.querySelectorAll('.ec8-ratesline,.ec8-ann,.ec8-official,.ec8-warn,.ec8-boc')])element.remove();
     const stat=window.EC8?.status?.(),date=RATES?.prime?.date,age=date?(Date.now()-Date.parse(date+'T12:00:00'))/864e5:null;
