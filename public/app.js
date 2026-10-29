@@ -441,5 +441,5 @@ function theme() { document.documentElement.dataset.theme = S.theme; document.qu
   const h = location.hash.slice(1); if (V[h] && h !== 'onboard') cur = h;
   if (!S.profile.city) { try { const g = await api('/api/geo'); if (g.city) { S.profile.city = g.city; S.profile.region = g.region; S.profile.country = g.country; save(); } } catch {} }
   applyRates(); render(); loadRates();
-  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js');
+  if ('serviceWorker' in navigator && location.protocol.startsWith('http')) navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).catch(()=>{});
 })();
