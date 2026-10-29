@@ -139,7 +139,7 @@ async function rss(url, fallback) {
   const xml = await r.text();
   return [...xml.matchAll(/<(?:item|entry)(?:\s[^>]*)?>([\s\S]*?)<\/(?:item|entry)>/gi)].map(m => m[1]).map(b => {
     const src = b.match(/<source[^>]*>([\s\S]*?)<\/source>/i);
-    return { title: strip(val(b, 'title')), link: link(b), source: src ? strip(src[1]) : fallback, sourceName: src ? strip(src[1]) : '', date: val(b, 'pubDate') || val(b, 'published') || val(b, 'updated') || new Date().toISOString(), description: strip(val(b, 'description') || val(b, 'summary')), provider: fallback };
+    return { title: strip(val(b, 'title')), link: link(b), source: src ? strip(src[1]) : fallback, sourceName: src ? strip(src[1]) : '', date: val(b, 'pubDate') || val(b, 'published') || val(b, 'updated') || null, description: strip(val(b, 'description') || val(b, 'summary')), provider: fallback };
   }).filter(valid).map(({ sourceName, ...x }) => ({ ...x, sourceName }));
 }
 async function currents(q, key) {
@@ -148,7 +148,7 @@ async function currents(q, key) {
   const r = await timed(u, { headers: { Authorization: `Bearer ${key}`, Accept: 'application/json' } }, 6000);
   if (!r.ok) throw Error(`HTTP ${r.status}`);
   const j = await r.json();
-  return (j.news || []).map(x => ({ title: x.title || '', link: x.url || '', source: host(x.url) || 'Currents', date: x.published || new Date().toISOString(), description: x.description || '', provider: 'Currents' })).filter(valid);
+  return (j.news || []).map(x => ({ title: x.title || '', link: x.url || '', source: host(x.url) || 'Currents', date: x.published || null, description: x.description || '', provider: 'Currents' })).filter(valid);
 }
 async function gdelt(q) {
   const u = new URL('https://api.gdeltproject.org/api/v2/doc/doc');
@@ -163,12 +163,12 @@ async function gdelt(q) {
 async function timed(url, opt, ms) { const c = new AbortController(), t = setTimeout(() => c.abort(), ms); try { return await fetch(url, { ...opt, signal: c.signal }); } finally { clearTimeout(t); } }
 async function cacheGet(k) { try { const r = await caches.default.match(k); return r ? await r.json() : null; } catch { return null; } }
 async function cachePut(k, d, ttl) { try { await caches.default.put(k, new Response(JSON.stringify(d), { headers: { 'content-type': 'application/json', 'cache-control': `public, max-age=${ttl}` } })); } catch {} }
-function gd(s) { const m = String(s || '').match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/); return m ? `${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}Z` : new Date().toISOString(); }
+function gd(s) { const m = String(s || '').match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/); return m ? `${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}Z` : null; }
 function val(b, t) { return dec(b.match(new RegExp(`<${t}(?:\\s[^>]*)?>([\\s\\S]*?)<\\/${t}>`, 'i'))?.[1] || '').trim(); }
 function link(b) { const t = val(b, 'link'); return /^https?:\/\//i.test(t) ? t : dec(b.match(/<link[^>]+href=["']([^"']+)["']/i)?.[1] || '').trim(); }
 function strip(s) { return dec(dec(s)).replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(); }
 function dec(s) { return String(s || '').replace(/<!\[CDATA\[|\]\]>/g, '').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#39;|&apos;|&#x27;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&nbsp;/g, ' ').replace(/&#8217;/g, "'").replace(/&#8216;/g, "'").replace(/&#8220;|&#8221;/g, '"').replace(/&#8211;|&#8212;/g, '-'); }
-function valid(x) { return x.title && x.title.length > 12 && /^https?:\/\//i.test(x.link); }
+function valid(x) { const t=Date.parse(x?.date); return x.title && x.title.length > 12 && /^https?:\/\//i.test(x.link) && Number.isFinite(t) && t <= Date.now()+30*60*1000; }
 function host(s) { try { return new URL(s).hostname.replace(/^www\./, ''); } catch { return ''; } }
 function norm(t) { return String(t || '').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 70); }
 function same(a, b) { return norm(a.title) === norm(b.title); }
