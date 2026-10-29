@@ -5,7 +5,7 @@ import vm from 'node:vm';
 const read=n=>readFileSync(new URL('../public/'+n,import.meta.url),'utf8');
 const updater=read('ec-pwa-update.js'),sw=read('sw.js'),index=read('index.html'),headers=read('_headers'),release=JSON.parse(read('release.json'));
 test('iPhone updater is bootstrapped ahead of the app and installs network revalidation',()=>{
- assert.ok(index.indexOf('ec-pwa-update.js?v=16.8.0')<index.indexOf('app.js?v=16.8.0'));
+ assert.ok(index.indexOf('ec-pwa-update.js?v=16.9.0')<index.indexOf('app.js?v=16.9.0'));
  assert.match(read('app.js'),/serviceWorker\.register\('sw\.js',\{updateViaCache:'none'\}\)/);
  assert.match(updater,/navSW\.register\(SW,\{updateViaCache:'none'\}\)/);
  assert.match(updater,/addEventListener\('visibilitychange'/);
@@ -13,7 +13,7 @@ test('iPhone updater is bootstrapped ahead of the app and installs network reval
  assert.match(updater,/addEventListener\('online'/);
 });
 test('PWA install must have a working shell; updates do not clear localStorage or account data',()=>{
- assert.equal(release.version,'16.8.0');
+ assert.equal(release.version,'16.9.0');
  assert.match(sw,/await cache\.add\(new Request\('\.\/index\.html',\{cache:'no-store'\}\)\)/);
  assert.match(sw,/name\.startsWith\('eq-'\)/);
  assert.doesNotMatch(updater+sw,/localStorage\.(clear|removeItem)|indexedDB\.deleteDatabase/);
