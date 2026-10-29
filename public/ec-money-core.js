@@ -14,8 +14,10 @@
    const eligible=required&&p<1500000&&validDown&&(+years<=25||eligible30===true);
    const base=p-d;
    const pct=ltv>.90?4.00:ltv>.85?3.10:ltv>.80?2.80:0;
-   // CMHC may apply additional surcharges for some eligible amortization/products.
-   return {required,eligible,validDown,minimum,ltv,base,premium:eligible?base*pct/100:0,premiumRate:eligible?pct:0,
+   // Keep a CONSERVATIVE hypothetical insurance allowance even when a scenario is
+   // ineligible/unverified; otherwise a low-down-payment estimate understates carrying costs.
+   // This does NOT mean insurance or lender approval is available.
+   return {required,eligible,validDown,minimum,ltv,base,premium:required?base*pct/100:0,premiumRate:required?pct:0,
      needsReview:required&&!eligible,mayHaveSurcharge:eligible&&+years>25};
  }
  function ownership(input={}){
@@ -31,7 +33,7 @@
    const closingPct=clamp(input.closingPct,0,10),closing=price*closingPct/100+clamp(input.closingExtra,0,2000000);
    const upfront=down+closing;
    const netIncome=Math.max(0,finite(input.netIncome)),nonHousing=Math.max(0,finite(input.nonHousing));
-   const caution='Illustrative cash flow only, not a mortgage pre-approval. Mortgage default insurance is estimated using CMHC standard premium rates when eligible; other insurer rules, provincial sales tax on the premium (where applicable), special surcharges, closing fees, land transfer tax, GST/HST on applicable new homes, utilities and unexpected repairs may vary. Confirm with your lender and lawyer.';
+   const caution='Illustrative cash flow only, not a mortgage pre-approval. When mortgage insurance would normally be required, a hypothetical standard CMHC premium is included even if this scenario may NOT qualify for insurance; this must not be interpreted as lender approval. Actual insurer rules, provincial sales tax on the premium (where applicable), special surcharges, closing fees, land transfer tax, GST/HST on applicable new homes, utilities and unexpected repairs may vary. Confirm with your lender and lawyer.';
    return {price,down,principal,mortgage,propertyTax,insurance,utilities,condo,maintenance,total,closing,upfront,cashAfterClosing:finite(input.cash)-upfront,
       room:netIncome-nonHousing-total,rate,years,loanToValue:ins.ltv,insurancePremium:premium,insurancePremiumRate:ins.premiumRate,
       estimatedInsuredPrincipal:principal,minimumDown:ins.minimum,downPaymentValid:ins.validDown,insuranceEstimateAvailable:ins.eligible||!ins.required,
