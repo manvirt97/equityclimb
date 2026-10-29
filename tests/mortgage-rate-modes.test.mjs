@@ -2,11 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
-import modes from '../public/ec-mortgage-modes.js';
-import money from '../public/ec-money-core.js';
 const read=n=>readFileSync(new URL('../public/'+n,import.meta.url),'utf8');
 const core=read('app.js');
 const ui=read('ec-mortgage-impact.js');
+const readUMD=name=>{const ctx={globalThis:{},window:{},module:undefined,console,Math,Number};vm.runInNewContext(read(name),ctx);return ctx.globalThis;};
+const modes=readUMD('ec-mortgage-modes.js').ECMortgageModes;
+const money=readUMD('ec-money-core.js').ECMoney;
 
 test('Canadian monthly fixed vs variable rates reconcile with shared financial core',()=>{
  const principal=450000,rate=4.5,n=300;
