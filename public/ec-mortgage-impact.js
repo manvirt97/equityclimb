@@ -65,9 +65,9 @@
    if(el.dataset.ecMInput==='property'){
      const c=S.ec13?.calc;
      if(c){
-       if(el.checked&&!m.linkProperty){m.savedPropertyRate=Number(c.rate);m.linkProperty=true;}
-       else if(!el.checked&&m.linkProperty){m.linkProperty=false;if(Number.isFinite(m.savedPropertyRate))c.rate=m.savedPropertyRate;delete m.savedPropertyRate;}
-       if(m.linkProperty&&S.rateMode==='Live'&&S.rtype==='Variable'&&Number.isFinite(+S.rate))c.rate=+S.rate;
+       if(el.checked&&!m.linkProperty){m.savedPropertyRate=Number(c.rate);m.savedPropertyFixed=c.fixed;m.linkProperty=true;}
+       else if(!el.checked&&m.linkProperty){m.linkProperty=false;if(Number.isFinite(m.savedPropertyRate))c.rate=m.savedPropertyRate;if(m.savedPropertyFixed!==undefined)c.fixed=m.savedPropertyFixed;delete m.savedPropertyRate;delete m.savedPropertyFixed;}
+       if(m.linkProperty&&S.rateMode==='Live'&&S.rtype==='Variable'&&Number.isFinite(+S.rate)){c.rate=+S.rate;c.fixed=false;}
      }
    }
    save();render();
