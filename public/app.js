@@ -80,6 +80,7 @@ function applyRates() {
   // Optional, explicit user choice only. Leave independent property assumptions untouched by default.
   if (S.ecMortgage?.linkProperty && S.ec13?.calc && +S.ec13.calc.rate !== rate) {
     S.ec13.calc.rate = rate;
+    S.ec13.calc.fixed = false; // Explicit variable-rate linkage, not fixed-rate compounding.
     changed = true;
   }
   if (changed) save();
