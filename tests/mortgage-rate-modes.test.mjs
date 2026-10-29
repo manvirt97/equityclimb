@@ -103,5 +103,5 @@ test('new scenario module leaves Home renderer and existing shortlist code uncha
  assert.ok(index.includes('ec-mortgage-modes.js?v=16.9'));
  assert.ok(index.includes('ec-mortgage-impact.js?v=16.9'));
  assert.ok(sw.includes('ec-mortgage-modes.js'));
- assert.ok(sw.includes('eq-v16-9-rate-integrity'));
+ assert.ok(sw.includes('eq-v16-10-finance-audit'));
 });
