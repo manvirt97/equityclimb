@@ -196,7 +196,13 @@
         el.innerHTML=root ? root.innerHTML : updated;
       } else el.innerHTML=snapInner();
       const chip = document.querySelector('.ratechip b');
-      if (chip && typeof prime === 'function' && prime()) chip.textContent = pct(prime(), 2);
+      if (chip) {
+        const confirmed = typeof RATES !== 'undefined' && RATES?.primeAnnouncement?.confirmed ? RATES.primeAnnouncement : null;
+        if (confirmed && Number.isFinite(+confirmed.value)) chip.textContent=pct(confirmed.value,2);
+        else if (typeof prime === 'function' && prime()) chip.textContent=pct(prime(),2);
+        const label=Array.from(chip.parentNode.childNodes).find(n=>n.nodeType===3);
+        if(label)label.textContent=confirmed ? 'Prime · '+confirmed.effectiveDate : 'Prime rate';
+      }
     } catch (err) { console.error(err); }
   }
   window.EC8_PAINT = paintSnap;
