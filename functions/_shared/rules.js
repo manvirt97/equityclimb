@@ -128,7 +128,8 @@ export async function getRules(year = new Date().getFullYear()) {
   year = Math.max(BASE_YEAR, Math.min(year, BASE_YEAR + 3));
   const key = `https://equityclimb.internal/rules/v7/${year}`;
   const hit = await cacheGet(key); if (hit) return hit;
-  let table = clone(BASE), limits = { ...BASE_LIMITS }, status = 'official', notes = [], factors = {};
+  // Some provincial credits and QPP details are estimates even for the base year.
+  let table = clone(BASE), limits = { ...BASE_LIMITS }, status = 'official_with_estimates', notes = ['2026 federal and Alberta brackets, CPP, EI and registered-account annual limits are sourced from CRA. Some provincial credits and QPP details remain estimates. Do not treat estimated net pay as a tax filing result.'], factors = {};
   for (let y = BASE_YEAR + 1; y <= year; y++) {
     let f = await craFactor(y), how = 'CRA';
     if (f == null) { const c = await cpiFactor(y); if (c) { f = c.factor; how = c.complete ? 'Statistics Canada CPI (full year)' : `Statistics Canada CPI (early estimate, ${c.monthsUsed} of 12 months)`; } }
