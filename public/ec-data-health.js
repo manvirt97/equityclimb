@@ -42,7 +42,7 @@
        const items=Array.isArray(j.items)?j.items:[],dated=items.filter(x=>Number.isFinite(x.time)&&x.time>0);
        return {status:dated.length===items.length&&items.length>0?'Delayed market data':'Missing or undated quotes',detail:items.length+' retrieved; latest trading timestamp '+(dated.length?new Date(Math.max(...dated.map(x=>x.time))).toISOString():'unavailable')+'. Not real-time execution prices.'};
     }},
-    {name:'Public news',url:'/api/news?scope=national&category=finance&country=CA&fresh=1',fn:j=>({status:(j.items||[]).length?'Live feed sampled':'Empty or unavailable',detail:(j.items||[]).length+' articles; source failures '+(j.sourceStatus||[]).filter(x=>!x.ok).length+'. Headlines, events and AI summaries are not fact-checked transaction records.'})},
+    {name:'Public news',url:'/api/news?scope=national&category=finance&country=CA&fresh=1',fn:j=>{const failures=(j.sourceStatus||[]).filter(x=>!x.ok).length;return {status:failures?'Partial provider outage':(j.items||[]).length?'Dated feed sampled':'Empty or unavailable',detail:(j.items||[]).length+' articles; source failures '+failures+'. Headlines, events and AI summaries are not fact-checked transaction records.'};}},
     {name:'Live MLS listings',url:'/api/homes?city=Calgary',fn:j=>({status:j.enabled?'Provider response available':'Not connected',detail:j.enabled?'Availability does not establish rights or listing accuracy.': 'Use manually entered homes only. No current MLS inventory is shown.'})}
   ];
   const settled=await Promise.allSettled(tasks.map(async t=>t.fn(await get(t.url))));
