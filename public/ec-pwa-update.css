@@ -1,0 +1,8 @@
+/* PWA update notice: discreet, accessible and safe above iPhone bottom navigation. */
+.ec-update-notice{position:fixed;z-index:120;left:50%;bottom:18px;transform:translateX(-50%);width:min(580px,calc(100% - 28px));padding:12px 14px;border-radius:14px;border:1px solid var(--line2,#cbd0d4);background:var(--surface,#fff);color:var(--ink,#1d2429);box-shadow:0 8px 30px rgba(0,0,0,.14);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.ec-update-notice p{font-size:12px;line-height:1.45;margin:0;flex:1;color:var(--ink)}
+.ec-update-notice button{font-size:11px;font-weight:750;border-radius:9px;border:1px solid var(--line2);background:var(--accent);color:var(--accent-ink);padding:10px 12px;cursor:pointer;white-space:nowrap}
+.ec-update-notice button.ec-update-dismiss{background:transparent;color:var(--ink2,#454c53);padding:10px}
+.ec-update-notice button:focus-visible{outline:3px solid var(--focus,#81939d);outline-offset:2px}
+@media(max-width:920px){.ec-update-notice{bottom:calc(89px + env(safe-area-inset-bottom));flex-wrap:wrap;padding:10px 12px}.ec-update-notice p{flex-basis:100%}.ec-update-notice button{flex:1}}
+@media(max-width:350px){.ec-update-notice button{font-size:10px}}
