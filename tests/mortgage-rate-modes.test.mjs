@@ -55,7 +55,7 @@ test('auto rate sync changes variable live mortgage and optional linked real est
  const fragment=core.slice(core.indexOf(marker),core.indexOf(end));
  assert.ok(fragment.includes("officialPrime(RATES)"));
  const S={rtype:'Variable',rateMode:'Live',adj:-.5,rate:3.95,pmt:2400,bal:450000,
-   ecMortgage:{linkProperty:true},ec13:{calc:{rate:4.85}}};
+   ecMortgage:{linkProperty:true},ec13:{calc:{rate:4.85,fixed:true}}};
  const RATES={prime:{value:4.45,date:'2026-10-21'}};
  let saves=0;
  const ctx={S,RATES,window:{ECMortgageModes:{officialPrime:()=>({value:4.7})}},save:()=>saves++,Number,Math};
@@ -63,6 +63,7 @@ test('auto rate sync changes variable live mortgage and optional linked real est
  ctx.applyRates();
  assert.equal(S.rate,4.2);
  assert.equal(S.ec13.calc.rate,4.2);
+ assert.equal(S.ec13.calc.fixed,false);
  assert.equal(S.pmt,2400);
  assert.equal(saves,1);
  S.rateMode='Manual';S.rate=4.8;ctx.applyRates();assert.equal(S.rate,4.8);
@@ -71,7 +72,7 @@ test('auto rate sync changes variable live mortgage and optional linked real est
 test('selected contract behaviour and property opt-in persist without silently changing mortgage payment',()=>{
  const listeners={},P={mortgage:()=>'<div>previous mortgage content</div>'};
  const S={rate:3.95,adj:-.5,rateMode:'Live',rtype:'Variable',bal:450000,pmt:2400,
-   ec13:{calc:{rate:5.25}},fp:{mort:{amortYears:21}}};
+   ec13:{calc:{rate:5.25,fixed:true}},fp:{mort:{amortYears:21}}};
  const env={window:{},S,P,ECMortgageModes:modes,save:()=>{},render:()=>{},
   document:{addEventListener:(n,f)=>listeners[n]=f},RATES:{prime:{value:4.45,date:'2026-10-21'},fetched:new Date().toISOString(),
     primeAnnouncement:{confirmed:true,value:4.7,effectiveDate:'2026-10-29',lender:'TD',sourceUrl:'https://td.mediaroom.com'}},
@@ -88,10 +89,12 @@ test('selected contract behaviour and property opt-in persist without silently c
  listeners.change({target:{dataset:{ecMInput:'property'},value:'on',checked:true}});
  assert.equal(S.ecMortgage.linkProperty,true);
  assert.equal(S.ec13.calc.rate,3.95);
+ assert.equal(S.ec13.calc.fixed,false);
  assert.equal(S.pmt,2400);
  listeners.change({target:{dataset:{ecMInput:'property'},value:'on',checked:false}});
  assert.equal(S.ecMortgage.linkProperty,false);
  assert.equal(S.ec13.calc.rate,5.25);
+ assert.equal(S.ec13.calc.fixed,true);
 });
 test('new scenario module leaves Home renderer and existing shortlist code unchanged',()=>{
  const index=read('index.html'),sw=read('sw.js');
