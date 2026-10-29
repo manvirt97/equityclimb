@@ -427,7 +427,7 @@ function render() {
   const nav = NAV.map(([k, l, i]) => `<button class="nav ${k === view ? 'on' : ''}" onclick="go('${k}')">${ic(i)}<span>${l}</span></button>`).join('');
   document.getElementById('side').innerHTML = S.profile.onboarded ? `<div class="logo"><svg viewBox="0 0 32 32">${I.logo}</svg>EquityClimb</div>${nav}<div class="grow"></div>
     <button class="nav ${view === 'settings' ? 'on' : ''}" onclick="go('settings')">${ic('gear')}<span>Settings</span></button>
-    <div class="ratechip">${prime() ? `<span class="dot"></span>Prime rate<b>${pct(prime(), 2)}</b>` : '<span class="dot off"></span>Rates offline'}</div>` : '';
+    <div class="ratechip">${RATES?.primeAnnouncement?.confirmed ? `<span class="dot"></span>Prime · ${esc(RATES.primeAnnouncement.effectiveDate)}<b>${pct(RATES.primeAnnouncement.value, 2)}</b>` : prime() ? `<span class="dot"></span>Prime rate<b>${pct(prime(), 2)}</b>` : '<span class="dot off"></span>Rates offline'}</div>` : '';
   document.getElementById('tabbar').innerHTML = S.profile.onboarded ? nav + `<button class="nav ${view === 'settings' ? 'on' : ''}" onclick="go('settings')">${ic('gear')}<span>More</span></button>` : '';
   const ae = document.activeElement, keep = ae && ae.id;
   document.getElementById('view').innerHTML = V[view]();
