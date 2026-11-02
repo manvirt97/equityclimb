@@ -2,7 +2,7 @@
 const CACHE_VERSION = 'crave-house-v3';
 const CONTENT_CACHE = CACHE_VERSION + '-content';
 const RUNTIME_CACHE = CACHE_VERSION + '-runtime';
-const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/offline.html', '/icon-192.png', '/icon-512.png'];
+const SHELL = ['/', '/index.html', '/order.html', '/manifest.webmanifest', '/offline.html', '/icon-192.png', '/icon-512.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CONTENT_CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));
 });
