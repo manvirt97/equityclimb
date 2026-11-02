@@ -105,6 +105,8 @@ cart=cart.filter(x=>x&&productById(x.id)&&Number.isSafeInteger(x.qty)&&x.qty>0&&
 if(!cart.length&&old&&typeof old==='object'&&!Array.isArray(old)){
  cart=PRODUCTS.filter(p=>Number.isInteger(old[p.id])&&old[p.id]>0).map(p=>({id:p.id,qty:Math.min(old[p.id],99),detail:''}));
 }
+// Migrate previously saved flavour-only rows into real single-cookie product drafts.
+cart=cart.map(item=>{const f=FLAVOURS.find(x=>x.id===item.id);return f?{id:'cookie-single',qty:item.qty,detail:item.detail||f.name}:item;});
 fulfillment=stored(FULFILLMENT_KEY,'delivery')==='pickup'?'pickup':'delivery';
 function persist(){try{localStorage.setItem(CART_KEY,JSON.stringify(cart))}catch{}updateCount()}
 function qtyCount(){return cart.reduce((sum,x)=>sum+x.qty,0)}
@@ -130,7 +132,7 @@ function renderCatalogue(){
  const visible=PRODUCTS.filter(p=>p.category===category&&(p.name+' '+p.desc).toLowerCase().includes(query));
  const lead=category==='cookies'?'Cookie flavours listed here were announced by Crave House. Flavour availability and any surcharges must be confirmed.':'The individual '+(category==='milkshakes'?'milkshake':category==='cakes'?'cake':'ice cream')+' flavours are not provided in the accessible public Uber Eats menu. Enter a preference when planning; only choices shown at actual checkout can be ordered.';
  $('catalogue').innerHTML='<div class="catalogue-note" style="grid-column:1/-1">'+safe(lead)+'</div>'+visible.map(p=>
- '<article class="product"><button type="button" class="photo" data-detail="'+safe(p.id)+'" aria-label="View '+safe(p.name)+' details"><img src="'+getImage(p)+'" alt="Illustrative image for '+safe(p.name)+'" loading="lazy">'+(p.badge?'<span class="pill">'+safe(p.badge)+'</span>':'')+'</button><div class="prodinfo"><h3>'+safe(p.name)+'</h3><p>'+safe(p.desc)+'</p><p class="price-tag">'+(p.price===null?'Price: check ordering menu':'Listed on Uber Eats: $'+p.price.toFixed(2)+' CAD*')+'</p><button type="button" class="add" data-detail="'+safe(p.id)+'">'+(p.kind==='flavour'?'Choose this flavour +':'Customize & add +')+'</button></div></article>'
+ '<article class="product"><button type="button" class="photo" data-detail="'+safe(p.id)+'" aria-label="View '+safe(p.name)+' and choose options"><img src="'+getImage(p)+'" alt="Illustrative image for '+safe(p.name)+'" loading="lazy">'+(p.badge?'<span class="pill">'+safe(p.badge)+'</span>':'')+'</button><div class="prodinfo"><h3>'+safe(p.name)+'</h3><p>'+safe(p.desc)+'</p><p class="price-tag">'+(p.kind==='flavour'?'Single cookie: $6.45 listed*':p.price===null?'Price: confirm at checkout':'Listed: $'+p.price.toFixed(2)+' CAD*')+'</p><button type="button" class="add" data-detail="'+safe(p.id)+'">'+(p.kind==='flavour'?'Choose flavour +':p.kind==='fourpack'?'Build a 4-pack +':p.kind==='single'?'Choose cookie +':'Choose options +')+'</button></div></article>'
  ).join('')+(visible.length?'':'<p class="empty" style="grid-column:1/-1">No matches found in this category.</p>');
  document.querySelectorAll('[data-detail]').forEach(el=>el.addEventListener('click',()=>showDetails(el.dataset.detail)));
 }
@@ -150,39 +152,70 @@ function closeDetails(){
  $('detailModal').classList.remove('open');$('detailModal').setAttribute('aria-hidden','true');
  if(location.hash&&productById(location.hash.slice(1)))history.replaceState(null,'',location.pathname+location.search);
 }
+
+function refreshCookieBuilder(){
+ const p=currentProduct;if(!p)return;
+ const isFlavour=p.kind==='flavour';
+ const box=p.kind==='fourpack'||(isFlavour&&$('modalPack').value==='fourpack');
+ const single=p.kind==='single';
+ $('modalPackChoice').hidden=!isFlavour;
+ $('modalSingleChoice').hidden=!single;
+ $('modalFourPack').hidden=!box;
+ $('modalPreference').hidden=isFlavour||box||single;
+ $('modalPreferenceLabel').hidden=isFlavour||box||single;
+ $('modalPreferenceHint').hidden=isFlavour||box||single;
+ if(single){
+  $('singleCookieFlavor').innerHTML=FLAVOURS.map(f=>'<option value="'+safe(f.name)+'">'+safe(f.name)+'</option>').join('');
+ }
+ if(box){
+  $('modalFourPack').innerHTML='<p class="flavour-build-note">Choose four planned flavours. The Uber Eats menu may offer a different selection or limit combinations; confirm them there before payment.</p>'+[1,2,3,4].map(i=>
+  '<label for="box-flavour-'+i+'">Cookie '+i+'</label><select id="box-flavour-'+i+'" aria-label="Cookie '+i+' flavour">'+FLAVOURS.map(f=>'<option value="'+safe(f.name)+'"'+(isFlavour&&i===1&&p.name===f.name?' selected':'')+'>'+safe(f.name)+'</option>').join('')+'</select>'
+  ).join('');
+ }
+ if(isFlavour){
+  $('modalPrice').textContent=box?'Four-cookie box: $21.99 CAD listed (not live)':'Single cookie: $6.45 CAD listed (not live)';
+  $('modalAdd').textContent=box?'Add four-cookie box +':'Add single cookie +';
+ }else{
+  $('modalPrice').textContent=p.price===null?'Confirm price on Uber Eats':'Listed on Uber Eats: $'+p.price.toFixed(2)+' CAD (not live)';
+  $('modalAdd').textContent=box?'Add four-cookie box +':single?'Add single cookie +':'Save to my list +';
+ }
+}
 function showDetails(id){
  const p=productById(id);if(!p)return;currentProduct=p;
  $('modalTitle').textContent=p.name;$('modalDescription').textContent=p.desc;
  $('modalImg').src=getImage(p);$('modalImg').alt='Illustrative image of '+p.name;
  $('modalEyebrow').textContent='Crave House / '+(p.category==='cookies'?'Cookie selection':p.category==='ice-cream'?'Ice cream':p.category==='milkshakes'?'Milkshake':'Cake');
- $('modalPrice').textContent=p.price===null?'Price varies; confirm on Uber Eats':'Public Uber Eats listing: $'+p.price.toFixed(2)+' CAD, not live';
- $('modalAvailability').textContent=p.kind==='flavour'?'This flavour was announced on Instagram. Confirm it is currently available and can be selected in Uber Eats.':p.kind==='fourpack'?'Four-cookie box is listed on Uber Eats. The four flavour choices entered here are a draft only and must be selected again during the actual checkout.':'Product type verified in the public Uber Eats menu. The full live modifier/flavour list is not accessible here; confirm exact available choices at checkout.';
- $('modalQuantity').value='1';$('modalPreference').value='';
- $('modalPreferenceLabel').textContent=p.kind==='flavour'?'Cookie flavour':p.kind==='fourpack'?'Additional preference (optional)':'Requested flavour or selection (optional)';
- $('modalPreference').placeholder=p.kind==='flavour'?p.name:'Enter a preference (not an availability guarantee)';
- $('modalPreference').value=p.kind==='flavour'?p.name:'';
- $('modalPreference').readOnly=p.kind==='flavour';
- $('modalPreference').hidden=p.kind==='fourpack';
- $('modalPreferenceLabel').hidden=p.kind==='fourpack';
- $('modalPreferenceHint').hidden=p.kind==='fourpack';
- $('modalFourPack').hidden=p.kind!=='fourpack';
- if(p.kind==='fourpack'){
-  $('modalFourPack').innerHTML='<p class="smallprint">Choose four cookie flavour preferences. This is not a live Uber Eats modifier selection.</p>'+[1,2,3,4].map(i=>
-  '<label for="box-flavour-'+i+'">Cookie '+i+'</label><select id="box-flavour-'+i+'" aria-label="Cookie '+i+' flavour">'+FLAVOURS.map(f=>'<option value="'+safe(f.name)+'">'+safe(f.name)+'</option>').join('')+'</select>'
-  ).join('');
- }
- if(p.kind!=='fourpack')$('modalPreferenceHint').textContent=p.kind==='flavour'?'Flavour selection is a preference only. Confirm availability on Uber Eats.':'The shop may offer different flavour and size options. Only selections accepted by Uber Eats are confirmed.';
+ $('modalQuantity').value='1';
+ $('modalPack').value='single';
+ $('modalPreference').value='';
+ $('modalPreference').readOnly=false;
+ $('modalPreferenceLabel').textContent='Requested flavour (optional)';
+ $('modalPreference').placeholder='Optional flavour request; availability unconfirmed';
+ $('modalAvailability').textContent=p.kind==='flavour'?
+ 'Select a single cookie or build a four-cookie box here. These flavours were announced by Crave House but must be confirmed in Uber Eats before purchase.':
+ p.kind==='fourpack'?'Create a four-cookie draft using the eight announced flavours. Check the live choices and pricing at checkout.':
+ p.kind==='single'?'Choose a flavour for a single cookie, then confirm availability and any changes on Uber Eats.':
+ 'Product type is verified publicly, but exact live modifiers and available flavours have not been provided. Check final options at checkout.';
+ refreshCookieBuilder();
  history.replaceState(null,'','#'+p.id);
  openModal();
 }
 function addToCart(){
  if(!currentProduct)return;
- const q=Math.max(1,Math.min(20,Math.trunc(Number($('modalQuantity').value)||1)));
- const detail=currentProduct.kind==='fourpack'?[1,2,3,4].map(i=>$('box-flavour-'+i)?.value||FLAVOURS[0].name).join(' / '):$('modalPreference').value.trim().slice(0,90);
- const existing=cart.find(x=>x.id===currentProduct.id&&x.detail===detail);
- if(existing)existing.qty=Math.min(99,existing.qty+q);else cart.push({id:currentProduct.id,qty:q,detail});
+ const p=currentProduct,q=Math.max(1,Math.min(20,Math.trunc(Number($('modalQuantity').value)||1)));
+ const isBox=p.kind==='fourpack'||(p.kind==='flavour'&&$('modalPack').value==='fourpack');
+ const itemId=p.kind==='flavour'?(isBox?'cookies-4':'cookie-single'):p.id;
+ let detail='';
+ if(isBox){detail=[1,2,3,4].map(i=>$('box-flavour-'+i)?.value||FLAVOURS[0].name).join(' / ');}
+ else if(p.kind==='flavour'){detail=p.name;}
+ else if(p.kind==='single'){detail=$('singleCookieFlavor').value||FLAVOURS[0].name;}
+ else{detail=$('modalPreference').value.trim().slice(0,90);}
+ const existing=cart.find(x=>x.id===itemId&&x.detail===detail);
+ if(existing)existing.qty=Math.min(99,existing.qty+q);
+ else cart.push({id:itemId,qty:q,detail});
  persist();renderCart();closeDetails();openDrawer();
 }
+$('modalPack').addEventListener('change',refreshCookieBuilder);
 $('modalAdd').addEventListener('click',addToCart);
 $('closeDetail').addEventListener('click',closeDetails);
 $('detailModal').addEventListener('click',e=>{if(e.target.id==='detailModal')closeDetails()});
