@@ -1,5 +1,5 @@
 {
-  "version": "16.10.0",
-  "released": "2026-10-28",
-  "changes": "Financial calculations and live-data integrity audit: tax, insured mortgages, news dates, quote as-of labels and Settings source checks"
+  "version": "16.11.0",
+  "released": "2026-11-02",
+  "changes": "Home Rates and market moved directly below Financial snapshot, with consistent full-width sourced rate cards and individual observation/effective dates. No changes to rate feeds or financial calculations."
 }

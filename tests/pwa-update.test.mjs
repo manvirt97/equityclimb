@@ -13,7 +13,7 @@ test('iPhone updater is bootstrapped ahead of the app and installs network reval
  assert.match(updater,/addEventListener\('online'/);
 });
 test('PWA install must have a working shell; updates do not clear localStorage or account data',()=>{
- assert.equal(release.version,'16.10.0');
+ assert.equal(release.version,'16.11.0');
  assert.match(sw,/await cache\.add\(new Request\('\.\/index\.html',\{cache:'no-store'\}\)\)/);
  assert.match(sw,/name\.startsWith\('eq-'\)/);
  assert.doesNotMatch(updater+sw,/localStorage\.(clear|removeItem)|indexedDB\.deleteDatabase/);

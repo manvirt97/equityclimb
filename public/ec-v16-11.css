@@ -1,0 +1,107 @@
+/* EquityClimb v16.11 — full-width, consistent and accessible market cards. */
+.grid.ec8-rates.ec1611-rates {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  width: 100%;
+  margin-top: 15px;
+}
+.ec1611-rates .ec1611-rate-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 232px;
+  padding: 18px 17px 16px;
+  border: 1px solid var(--line, #dce3e8);
+  border-radius: 16px;
+  background: var(--surface, #fff);
+  box-shadow: 0 2px 12px rgba(26, 37, 49, .025);
+  text-align: left;
+}
+.ec1611-rate-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+  color: var(--mute, #6a7786);
+  font-size: 10px;
+  line-height: 1.5;
+  letter-spacing: .025em;
+}
+.ec1611-rate-top span:first-child {
+  color: var(--accent, #9b7135);
+  font-weight: 750;
+  white-space: nowrap;
+}
+.ec1611-rate-top span:last-child { text-align: right; }
+.ec1611-rate-name {
+  margin: 16px 0 4px;
+  color: var(--ink, #142434);
+  font-size: 14px;
+  line-height: 1.35;
+  font-weight: 700;
+  letter-spacing: -.02em;
+}
+.ec1611-rate-number {
+  font-size: clamp(26px, 2.35vw, 34px);
+  line-height: 1.17;
+  letter-spacing: -.055em;
+  font-weight: 720;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink, #142434);
+}
+.ec1611-percent { font-size: .62em; margin-left: 1px; letter-spacing: -.02em; }
+.ec1611-no-value { font-size: 16px; letter-spacing: 0; }
+.ec1611-rate-note {
+  margin: 9px 0 14px;
+  color: var(--mute, #647486);
+  font-size: 11px;
+  line-height: 1.55;
+}
+.ec1611-rate-bottom {
+  margin-top: auto;
+  padding-top: 11px;
+  border-top: 1px solid var(--line, #e2e7ea);
+  display: grid;
+  gap: 7px;
+  font-size: 10.5px;
+  line-height: 1.45;
+}
+.ec1611-rate-date { color: var(--ink2, var(--ink, #293a48)); font-weight: 650; }
+.ec1611-rate-date small {
+  display: block;
+  margin-top: 2px;
+  color: var(--mute, #647486);
+  font-size: 10px;
+  font-weight: 400;
+}
+.ec1611-rate-source {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  color: var(--mute, #647486);
+}
+.ec1611-rate-source a {
+  color: var(--accent, #9b7135);
+  font-weight: 700;
+  text-decoration: none;
+  text-underline-offset: 3px;
+}
+.ec1611-rate-source a:hover { text-decoration: underline; }
+.ec1611-rate-source a:focus-visible { outline: 2px solid var(--accent, #9b7135); outline-offset: 3px; border-radius: 2px; }
+.ec1611-market-panel { margin-top: 0; }
+.ec1611-market-heading { margin-top: 24px; }
+@media (max-width: 1040px) {
+  .grid.ec8-rates.ec1611-rates { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ec1611-rates .ec1611-rate-card { min-height: 214px; }
+}
+@media (max-width: 560px) {
+  .grid.ec8-rates.ec1611-rates { grid-template-columns: 1fr; gap: 9px; }
+  .ec1611-rates .ec1611-rate-card { min-height: 0; padding: 15px; }
+  .ec1611-rate-name { margin-top: 11px; }
+  .ec1611-rate-note { margin-bottom: 11px; }
+  .ec1611-rate-bottom { gap: 5px; }
+}
+@media (prefers-reduced-motion: reduce) { .ec1611-rates * { transition: none !important; } }
