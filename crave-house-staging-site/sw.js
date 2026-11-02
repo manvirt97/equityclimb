@@ -1,5 +1,5 @@
 /* The Crave House Desserts PWA service worker — staging, no personal data. */
-const CACHE_VERSION = 'crave-house-v3';
+const CACHE_VERSION = 'crave-house-v4';
 const CONTENT_CACHE = CACHE_VERSION + '-content';
 const RUNTIME_CACHE = CACHE_VERSION + '-runtime';
 const SHELL = ['/', '/index.html', '/order.html', '/manifest.webmanifest', '/offline.html', '/icon-192.png', '/icon-512.png'];
@@ -25,10 +25,10 @@ self.addEventListener('fetch', event => {
     event.respondWith((async () => {
       try {
         const response = await fetch(request);
-        if (response.ok) (await caches.open(CONTENT_CACHE)).put('/', response.clone());
+        if (response.ok) (await caches.open(CONTENT_CACHE)).put(request, response.clone());
         return response;
       } catch {
-        return (await caches.match('/')) || (await caches.match('/offline.html')) || Response.error();
+        return (await caches.match(request)) || (await caches.match('/offline.html')) || Response.error();
       }
     })());
     return;
