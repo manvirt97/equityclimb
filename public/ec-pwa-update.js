@@ -1,8 +1,8 @@
-/* EquityClimb 16.8 — safe iPhone Home Screen update detection.
+/* EquityClimb 16.12 — version-aware PWA updates without repeated reload banners.
  * Does not modify financial data, account sync, routes, or view layouts. */
 (()=>{
  'use strict';
- const BUILD='16.10.0', META='/release.json', SW='./sw.js';
+ const BUILD='16.12.0', META='/release.json', SW='./sw.js';
  let lastCheck=0, checking=null, announced='', activationSeen=false, reg=null;
  const navSW=navigator.serviceWorker;
  const hadController=!!navSW?.controller;
@@ -65,13 +65,18 @@
    navSW.addEventListener('controllerchange',()=>{
      if(!hadController||activationSeen)return;
      activationSeen=true;
-     // Avoid automatic reloads while users are entering or reviewing financial information.
-     if(!editable())output('EquityClimb has downloaded an update. Reload to use the latest rates and fixes.');
-     else output('An EquityClimb update is ready. Save your current entry, then reload.');
+     // Controller changes also occur when the current build is reinstalled.
+     // Only advertise an update when the server actually reports a newer version.
+     if(announced && newer(announced, BUILD)){
+       if(!editable())output('EquityClimb has downloaded an update. Reload to use the latest version.');
+       else output('An EquityClimb update is ready. Save your current entry, then reload.');
+     } else check(true);
    });
    navSW.addEventListener('message',e=>{
-     if(hadController&&e.data?.type==='EQUITYCLIMB_UPDATED'){
-       output('A new EquityClimb version is ready. Reload to see the latest verified rates.');
+     if(hadController && e.data?.type==='EQUITYCLIMB_UPDATED' &&
+        typeof e.data.version==='string' && newer(e.data.version,BUILD)){
+       announced=e.data.version;
+       output('A newer EquityClimb version is ready. Reload to see the latest fixes.');
      }
    });
    // Register promptly. A late geolocation/API response must not postpone SW updates.
