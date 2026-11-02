@@ -1,5 +1,5 @@
 /* The Crave House Desserts PWA service worker — staging, no personal data. */
-const CACHE_VERSION = 'crave-house-v4';
+const CACHE_VERSION = 'crave-house-v5';
 const CONTENT_CACHE = CACHE_VERSION + '-content';
 const RUNTIME_CACHE = CACHE_VERSION + '-runtime';
 const SHELL = ['/', '/index.html', '/order.html', '/manifest.webmanifest', '/offline.html', '/icon-192.png', '/icon-512.png'];
