@@ -42,8 +42,8 @@ test('rates fill four real columns, adapt to tablets/phones, and ship in the PWA
   assert.match(css, /@media \(max-width: 1040px\)/);
   assert.match(css, /@media \(max-width: 560px\)/);
   assert.match(css, /focus-visible/);
-  assert.ok(html.includes('ec-v16-11.css?v=16.11.0'));
-  assert.ok(html.includes('ec-v16-11.js?v=16.11.0'));
+  assert.ok(html.includes('ec-v16-11.css?v=16.12.0'));
+  assert.ok(html.includes('ec-v16-11.js?v=16.12.0'));
   assert.ok(html.indexOf('ec-v16-11.js') > html.indexOf('ec-v16-5.js'));
   for (const file of ['ec-v16-11.css', 'ec-v16-11.js']) assert.ok(sw.includes(file));
 });

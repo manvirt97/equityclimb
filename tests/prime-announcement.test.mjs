@@ -106,7 +106,7 @@ test('render and cache are restricted to rate widgets; no Home or Shortlist over
  assert.match(v16,/Confirmed major-bank prime/);
  assert.match(v16,/primeDisplay/);
  assert.match(index,/ec-v16\.js\?v=16\.7\.2/);
- assert.match(sw,/eq-v16-11-market-polish/);
+ assert.match(sw,/eq-v16-12-pwa-market-repair/);
  const main=readFileSync(new URL('../public/ec-v16-5.js',import.meta.url),'utf8');
  assert.doesNotMatch(main,/V\.home\s*=/);
 });

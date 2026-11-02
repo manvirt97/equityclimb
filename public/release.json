@@ -1,5 +1,5 @@
 {
-  "version": "16.11.0",
+  "version": "16.12.0",
   "released": "2026-11-02",
-  "changes": "Home Rates and market moved directly below Financial snapshot, with consistent full-width sourced rate cards and individual observation/effective dates. No changes to rate feeds or financial calculations."
+  "changes": "Fix Home market cards not loading due to incorrect global variable check; fix PWA updater repeatedly offering a previously installed release; preserve all financial calculations and saved data."
 }

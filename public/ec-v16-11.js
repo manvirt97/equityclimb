@@ -2,7 +2,7 @@
    Presentation only: rates and calculations are supplied by existing validated feeds. */
 (() => {
   'use strict';
-  if (window.__ec1611 || !window.V || typeof window.rateStrip !== 'function') return;
+  if (window.__ec1611 || typeof V === 'undefined' || typeof window.rateStrip !== 'function') return;
   window.__ec1611 = true;
 
   const esc = value => String(value ?? '').replace(/[&<>"']/g, char =>
@@ -152,6 +152,6 @@
   }
   try {
     if (typeof S !== 'undefined' && S.profile?.onboarded &&
-        typeof cur !== 'undefined' && cur === 'home' && typeof render === 'function') render();
+        document.querySelector('#view .ec153-primary-metrics') && typeof render === 'function') render();
   } catch (_) { /* The next normal Home render applies the enhancement. */ }
 })();
