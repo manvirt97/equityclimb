@@ -25,10 +25,10 @@
   ],
   "shortcuts": [
     {
-      "name": "Cookie Flavours",
-      "short_name": "Cookies",
-      "description": "Explore the announced cookie lineup",
-      "url": "/#flavours",
+      "name": "Browse Menu",
+      "short_name": "Menu",
+      "description": "Browse the cookie menu and plan your order",
+      "url": "/order.html",
       "icons": [
         {
           "src": "/icon-192.png",
