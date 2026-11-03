@@ -2,6 +2,7 @@
 // Same behaviour as the chat mode of /api/ai, plus a choice of free Workers AI models.
 // If a chosen model is unavailable or returns nothing, it automatically falls back to the default model.
 import { getRules, factSheet } from '../_shared/rules.js';
+import { reserveBudget } from './ai-router.js';
 
 const MODELS = {
   balanced: '@cf/meta/llama-3.3-70b-instruct-fp8-fast',
@@ -60,7 +61,12 @@ async function run(env, key, system, msgs) {
 
 export async function onRequestPost({ request, env }) {
   if (!env.AI) return reply({ error: 'AI is not connected yet. In Cloudflare: your project \u2192 Settings \u2192 Bindings \u2192 Add \u2192 Workers AI, name it AI, then redeploy.' }, 503);
+  if (!(request.headers.get('content-type') || '').includes('application/json')) return reply({ error: 'Expected JSON.' }, 415);
+  if (Number(request.headers.get('content-length') || 0) > 70000) return reply({ error: 'Request too large.' }, 413);
   let b; try { b = await request.json(); } catch (_) { return reply({ error: 'Bad request' }, 400); }
+  if (!b || typeof b !== 'object' || Array.isArray(b) || !Array.isArray(b.messages) || !b.messages.length) return reply({ error: 'Enter a question.' }, 400);
+  const budget = await reserveBudget(env, request);
+  if (!budget.ok) return reply({ error: budget.message, code: 'limit' }, 429);
   const key = MODELS[b.model] ? b.model : 'balanced';
   let facts = ''; try { facts = factSheet(await getRules(new Date().getFullYear())); } catch (_) { /* optional */ }
   const ctx = b.context ? `\nThe user's own numbers (shared by the user): ${JSON.stringify(b.context).slice(0, 3000)}` : '';
@@ -77,7 +83,7 @@ export async function onRequestPost({ request, env }) {
   }
   if (!text) {
     const s = String(lastErr || ''), limit = /neuron|quota|limit|429|capacity/i.test(s), reset = new Date(); reset.setUTCHours(24, 0, 0, 0);
-    return reply({ error: limit ? 'The free AI allowance for today has been used up.' : 'The AI service is busy right now. Please try again in a minute.', code: limit ? 'limit' : 'busy', resetAt: reset.toISOString(), detail: s.slice(0, 200) }, 502);
+    return reply({ error: limit ? 'The free AI allowance for today has been used up.' : 'The AI service is busy right now. Please try again in a minute.', code: limit ? 'limit' : 'busy', resetAt: reset.toISOString() }, 502);
   }
   const out = { ...splitFollowups(text), model: used, fallback };
   if (ck && out.text && !fallback) await cachePut(ck, out, 7 * 86400);
