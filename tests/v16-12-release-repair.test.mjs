@@ -30,8 +30,8 @@ test('PWA release and updater versions agree across source, page and worker', ()
   assert.ok(match, 'updater has a declared build');
   assert.equal(match[1], release.version);
   assert.ok(index.includes('ec-pwa-update.js?v=' + release.version));
-  assert.ok(index.includes('ec-v16-11.js?v=' + release.version));
-  assert.match(sw, /eq-v16-12-pwa-market-repair/);
+  assert.ok(index.includes('ec-install.js?v=' + release.version));
+  assert.match(sw, /eq-v16-13-install-ready/);
   assert.ok(sw.includes("version:'" + release.version + "'"));
 });
 
@@ -61,7 +61,7 @@ test('PWA never prompts again for the already-installed build or a late old-work
   };
   const location = { href: 'https://equityclimb.pages.dev/#home', replace: url => navigations.push(url) };
   const window = { addEventListener(name, fn) { events[name] = fn; }, setInterval() {} };
-  let serverVersion = '16.12.0';
+  let serverVersion = '16.13.0';
   vm.runInNewContext(read('ec-pwa-update.js'), {
     window, location, document, navigator: { serviceWorker, onLine: true },
     sessionStorage: { setItem: (k,v) => writes.push([k,v]) },
@@ -77,7 +77,7 @@ test('PWA never prompts again for the already-installed build or a late old-work
   assert.equal(elements.has('ec-update-notice'), false, 'controller switch to same build is not an update');
   assert.equal(navigations.length, 0, 'no automatic navigation');
   assert.equal(writes.length, 0, 'no unapproved storage changes');
-  serverVersion = '16.13.0';
+  serverVersion = '16.14.0';
   await window.ECPWA.check();
   assert.equal(elements.has('ec-update-notice'), true, 'a truly newer version should still be offered');
 });
