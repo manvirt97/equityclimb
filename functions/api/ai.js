@@ -3,6 +3,7 @@
 // v7: always given today's date + current Canadian rules (auto-updating), returns follow-up suggestions,
 //     answers common general questions from a saved copy to save the free allowance.
 import { getRules, factSheet } from '../_shared/rules.js';
+import { reserveBudget } from './ai-router.js';
 
 const MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
 const GUARD = `You are EquityClimb's money guide. Your purpose: make every person financially smarter, including people who have never studied finance.
@@ -19,7 +20,14 @@ The follow-ups are short questions (max 9 words) the user would naturally ask ne
 
 export async function onRequestPost({ request, env }) {
   if (!env.AI) return reply({ error: 'AI is not connected yet. In Cloudflare: your project → Settings → Bindings → Add → Workers AI, name it AI, then redeploy.' }, 503);
+  if (!(request.headers.get('content-type') || '').includes('application/json')) return reply({ error: 'Expected JSON.' }, 415);
+  if (Number(request.headers.get('content-length') || 0) > 70000) return reply({ error: 'Request too large.' }, 413);
   let b; try { b = await request.json(); } catch { return reply({ error: 'Bad request' }, 400); }
+  if (!b || typeof b !== 'object' || Array.isArray(b)) return reply({ error: 'Bad request' }, 400);
+  if (!['chat', 'brief', 'areas'].includes(b.mode)) return reply({ error: 'Unknown mode' }, 400);
+  if (b.mode === 'chat' && (!Array.isArray(b.messages) || !b.messages.length)) return reply({ error: 'Enter a question.' }, 400);
+  const budget = await reserveBudget(env, request);
+  if (!budget.ok) return reply({ error: budget.message, code: 'limit' }, 429);
   let facts = '';
   try { facts = factSheet(await getRules(new Date().getFullYear())); } catch {}
   const ctx = b.context ? `\nThe user's own numbers (shared by the user): ${JSON.stringify(b.context).slice(0, 3000)}` : '';
@@ -54,7 +62,7 @@ Only include neighbourhoods you are confident exist. Price tier is relative with
   } catch (e) {
     const s = String(e), limit = /neuron|quota|limit|429|capacity/i.test(s);
     const reset = new Date(); reset.setUTCHours(24, 0, 0, 0);
-    return reply({ error: limit ? 'The free AI allowance for today has been used up.' : 'The AI service is busy right now. Please try again in a minute.', code: limit ? 'limit' : 'busy', resetAt: reset.toISOString(), detail: s.slice(0, 200) }, 502);
+    return reply({ error: limit ? 'The free AI allowance for today has been used up.' : 'The AI service is busy right now. Please try again in a minute.', code: limit ? 'limit' : 'busy', resetAt: reset.toISOString() }, 502);
   }
 }
 
