@@ -33,7 +33,7 @@ for (const [label, handle, body] of routes) {
 }
 test('live app entry point never references missing local scripts or style sheets', () => {
   const html = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8');
-  for (const match of html.matchAll(/<(?:script|link)\\b[^>]*?(?:src|href)="([^"]+\\.(?:js|css)(?:\\?[^\"]*)?)"/g)) {
+  for (const match of html.matchAll(/<(?:script|link)\b[^>]*?(?:src|href)="([^"]+\.(?:js|css)(?:\?[^\"]*)?)"/g)) {
     const path = match[1].split('?')[0];
     assert.ok(existsSync(new URL('../public/' + path, import.meta.url)), 'missing application asset: ' + path);
   }
@@ -41,6 +41,6 @@ test('live app entry point never references missing local scripts or style sheet
 test('public AI endpoints never expose raw provider exceptions in responses', () => {
   for (const path of ['../functions/api/ai.js', '../functions/api/ai-chat.js']) {
     const source = readFileSync(new URL(path, import.meta.url), 'utf8');
-    assert.doesNotMatch(source, /detail:\\s*s\\.slice\\(0,\\s*200\\)/);
+    assert.doesNotMatch(source, /detail:\s*s\.slice\(0,\s*200\)/);
   }
 });
