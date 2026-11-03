@@ -1,5 +1,5 @@
 {
-  "version": "16.12.0",
-  "released": "2026-11-02",
-  "changes": "Fix Home market cards not loading due to incorrect global variable check; fix PWA updater repeatedly offering a previously installed release; preserve all financial calculations and saved data."
+  "version": "16.13.0",
+  "released": "2026-11-03",
+  "changes": "Add free iPhone and Android installation guide and Settings installation help without changing existing financial data or calculations."
 }

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Install Equity Climb — Free on iPhone and Android</title>
+<meta name="theme-color" content="#f6f7f7">
+<meta name="description" content="Install Equity Climb for free on your iPhone or Android Home Screen.">
+<link rel="icon" href="/icon.svg"><link rel="apple-touch-icon" href="/icon-180.png"><link rel="manifest" href="/manifest.webmanifest">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f6f7f7;color:#24313a;font:16px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+main{max-width:920px;margin:0 auto;padding:22px 22px 72px}
+nav{display:flex;justify-content:space-between;align-items:center;gap:15px}a{color:#435b67;text-underline-offset:3px}
+.brand{display:flex;gap:10px;align-items:center;font-size:18px;font-weight:800;letter-spacing:-.04em}
+.brand img{width:32px;height:32px}.hero{max-width:780px;padding:55px 0 35px}
+.eyebrow{text-transform:uppercase;letter-spacing:.13em;color:#65747c;font-size:12px;font-weight:800}
+h1{font-size:clamp(35px,6vw,60px);line-height:1.08;letter-spacing:-.055em;margin:13px 0 18px}
+.lead{font-size:19px;color:#5d6c75;margin:0 0 24px}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+.button{padding:13px 20px;min-height:48px;border-radius:12px;background:#2c3c45;color:#fff;font-size:15px;font-weight:700;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;border:0}
+.button.alt{background:#e5e9eb;color:#2c3c45}.button:hover{filter:brightness(.96);text-decoration:none}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.panel{border:1px solid #e1e6e9;border-radius:18px;background:#fff;padding:24px}
+h2{font-size:22px;letter-spacing:-.03em;margin:0 0 10px}
+ol{padding-left:22px;margin:0}li{margin:9px 0}
+.note{margin-top:20px;padding:16px 20px;background:#e9eef0;border-left:3px solid #6b8792;border-radius:0 12px 12px 0}
+#status{font-weight:700;color:#266345}footer{display:flex;flex-wrap:wrap;gap:16px;margin-top:30px;font-size:13px}
+[hidden]{display:none!important}a:focus-visible,button:focus-visible{outline:3px solid #547487;outline-offset:3px}
+@media(max-width:640px){main{padding:16px 18px 58px}.hero{padding:42px 0 28px}.grid{grid-template-columns:1fr}.panel{padding:21px}.actions>*{width:100%}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style></head>
+<body><main>
+<nav><div class="brand"><img src="/icon-192.png" alt="">Equity Climb</div><a href="/">Open app</a></nav>
+<header class="hero"><div class="eyebrow">The free home-screen app</div>
+<h1>Your money. One clear place. Right on your phone.</h1>
+<p class="lead">Install Equity Climb on iPhone or Android directly from your browser. No App Store or Google Play registration fee is required.</p>
+<div class="actions"><a class="button" href="/">Open Equity Climb</a><button class="button alt" type="button" id="install-now" hidden>Install app</button></div>
+<p id="status" role="status" hidden>Already installed. Open Equity Climb from your Home Screen.</p>
+</header>
+<div class="grid">
+<section class="panel"><h2>iPhone and iPad</h2><ol><li>Open <strong>equityclimb.pages.dev</strong> in <strong>Safari</strong>.</li><li>Tap the <strong>Share</strong> icon.</li><li>Choose <strong>Add to Home Screen</strong>.</li><li>If shown, enable <strong>Open as Web App</strong>, then tap <strong>Add</strong>.</li></ol></section>
+<section class="panel"><h2>Android</h2><ol><li>Open <strong>equityclimb.pages.dev</strong> in <strong>Chrome</strong>.</li><li>Tap the <strong>three-dot menu</strong>.</li><li>Choose <strong>Install app</strong> or <strong>Add to Home screen</strong>.</li><li>Confirm the installation.</li></ol></section>
+</div>
+<div class="note"><strong>Already using Equity Climb?</strong> If you've saved financial information as a guest, export a backup in Settings before installing or switching devices. Safari and the iPhone Home Screen app may use separate storage. Do not remove an existing installation until your data is backed up.</div>
+<footer><a href="/">Open Equity Climb</a><a href="/privacy.html">Privacy policy</a><span>Installation is free. Hosting and service usage remain subject to provider limits.</span></footer>
+</main>
+<script>
+(function(){
+ 'use strict';
+ var btn=document.getElementById('install-now'),status=document.getElementById('status'),pending=null;
+ var installed=function(){return navigator.standalone||(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches);};
+ function update(){btn.hidden=!pending||!!installed();status.hidden=!installed();}
+ window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();pending=e;update();});
+ window.addEventListener('appinstalled',function(){pending=null;update();});
+ btn.addEventListener('click',async function(){if(!pending)return;var event=pending;pending=null;try{await event.prompt();await event.userChoice;}catch(_){}update();});
+ if('serviceWorker' in navigator)navigator.serviceWorker.register('/sw.js',{updateViaCache:'none'}).catch(function(){});
+ update();
+})();
+</script>
+</body></html>

@@ -1,0 +1,10 @@
+/* Isolated install helper card. Respects the existing light/dark theme. */
+.ec-install-card{margin:18px 0 24px;padding:22px 24px}
+.ec-install-card h2{font-size:clamp(19px,3vw,24px);line-height:1.25;margin:0 0 9px}
+.ec-install-card p{line-height:1.5}
+.ec-install-card #ec-install-hint{padding:12px 14px;border-radius:12px;border:1px solid var(--line,#d8dee2);background:var(--surface2,transparent);color:var(--ink,#1f292f);margin:14px 0}
+.ec-install-card .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.ec-install-card .row a{text-decoration:none;display:inline-flex;align-items:center;justify-content:center;min-height:42px}
+.ec-install-card [hidden]{display:none!important}
+.ec-install-card :is(a,button):focus-visible{outline:3px solid var(--accent,#547487);outline-offset:3px}
+@media(max-width:420px){.ec-install-card{padding:18px}.ec-install-card .row>*{width:100%}}
