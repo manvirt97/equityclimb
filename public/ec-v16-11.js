@@ -140,6 +140,11 @@
         if (gap?.classList?.contains('sp')) gap.remove();
         snapshot.after(heading, market, ...(insights ? [insights] : []));
         market.classList.add('ec1611-market-panel');
+        const futureCard = document.createElement('section');
+        futureCard.className = 'card flat ec-time-machine-entry';
+        futureCard.style.cssText = 'padding:22px;margin:20px 0;border:1px solid #dbe6e5;border-radius:18px';
+        futureCard.innerHTML = '<small style="font-weight:800;letter-spacing:.12em;color:#527f7b">NEW · YOUR NEXT CHAPTER</small><h2 style="margin:8px 0">Your financial time machine</h2><p>What could one small monthly habit change over time? Compare two hypothetical futures without sharing your balances.</p><a href="/time-machine.html" class="btn" style="display:inline-flex;padding:12px 16px">Explore two futures ↗</a>';
+        market.after(futureCard);
         heading.classList.add('ec1611-market-heading');
         const wrapper = document.createElement('div');
         wrapper.append(root);
