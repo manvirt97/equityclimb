@@ -1,0 +1,17 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0c2639"><title>Financial Time Machine · EquityClimb</title>
+<meta name="description" content="Explore how small changes in saving habits might change future milestones. Scenario modelling, not a prediction.">
+<link rel="icon" href="/icon.svg"><link rel="stylesheet" href="/time-machine.css"><script src="/time-machine.js" defer></script></head>
+<body><header class="top"><a class="brand" href="/">Equity<span>Climb</span></a><a href="/" class="back">← Home &amp; Money</a></header>
+<main class="shell"><section class="hero"><div class="eyebrow">EQUITYCLIMB / YOUR NEXT CHAPTER</div><h1>Meet your <em>future self.</em></h1><p>What if you changed just one monthly money habit? Turn that question into side-by-side scenarios, then share the idea—not your private finances.</p></section>
+<div class="layout"><section class="panel"><div class="eyebrow">01 / THE DIALS YOU CONTROL</div><h2>Try a different tomorrow</h2>
+<form id="model"><div class="fields"><label>Starting savings (CAD)<input name="start" type="number" min="0" max="100000000" value="5000" required></label>
+<label>Current monthly savings (CAD)<input name="monthly" type="number" min="0" max="1000000" value="350" required></label><label>Extra monthly savings to test (CAD)<input name="boost" type="number" min="0" max="1000000" value="150" required></label>
+<label>Years to explore<input name="years" type="number" min="1" max="60" step="1" value="15" required></label><label>Illustrative annual return (%)<input name="rate" type="number" min="-10" max="20" step=".5" value="4" required></label>
+<label>Example milestone target (CAD)<input name="goal" type="number" min="100" max="100000000" value="60000" required></label></div></form>
+<div class="disclaimer">These are hypothetical arithmetic scenarios, not investment performance, financial advice, or promised returns. Inflation, tax, fees, volatility, emergencies and employer benefits are excluded. Negative returns are allowed in this model. Nothing is read from your account, stored, or sent to a server.</div></section>
+<section class="panel outcome"><div class="eyebrow">02 / YOUR FINANCIAL TIME MACHINE</div><h2>One habit. Two futures.</h2><div class="totals"><div><small>If nothing changes</small><strong id="baseline">—</strong></div><div class="accent"><small>With the monthly boost</small><strong id="boosted">—</strong></div></div>
+<div class="bars"><div class="chart-label">Relative scenario balance</div><div class="track"><div class="fill old" id="oldbar"></div></div><div class="track"><div class="fill new" id="newbar"></div></div></div>
+<div class="moment"><span class="eyebrow">THE DIFFERENCE</span><strong id="difference">—</strong><p id="moment-label">Estimate the impact of your change.</p></div><div class="milestone"><h3>Your milestone</h3><p id="milestone"></p></div>
+<div class="share"><label><input id="numbers" type="checkbox"> Include my hypothetical dollar amounts when sharing</label><button id="share" type="button">Share my future scenario ↗</button><small id="share-note" role="status">The default share contains no balances, savings amounts or personal details.</small></div></section></div>
+<footer>EquityClimb · Scenario planning only · Canadian dollars · No account data accessed</footer></main></body></html>
