@@ -3,8 +3,6 @@
 const form=document.getElementById('model');
 const money=n=>new Intl.NumberFormat('en-CA',{style:'currency',currency:'CAD',maximumFractionDigits:0}).format(n);
 const get=(v,key,min,max)=>{const raw=v[key];const n=Number(raw);if(raw===''||!Number.isFinite(n)||n<min||n>max)throw Error('Invalid '+key);return n};
-exported();
-function exported(){}
 function futureValue(principal,monthly,annualReturn,years){
  const count=Math.round(years*12),r=Math.pow(1+annualReturn/100,1/12)-1;
  if(Math.abs(r)<1e-12)return principal+monthly*count;
