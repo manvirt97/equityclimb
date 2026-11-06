@@ -19,9 +19,11 @@
 .ec-mortgage-results strong{color:var(--ink);font-size:20px;line-height:1.25}
 .ec-mortgage-results small{color:var(--ink2);font-size:10.5px;line-height:1.5}
 .ec-mortgage-impact .ec-mortgage-caution{border-left:3px solid var(--warn);padding:10px;background:var(--surface2);border-radius:7px;color:var(--ink)}
-.ec-mortgage-link{display:flex;align-items:flex-start;gap:9px;font-size:12px;line-height:1.55;color:var(--ink);cursor:pointer}
-.ec-mortgage-link input{margin-top:3px;flex:none;accent-color:var(--accent)}
-.ec-mortgage-link small{color:var(--ink2);font-size:11px}
+/* The generic input rule uses width:100%; don't let the opt-in checkbox
+   consume the whole flex row and push its label off the phone screen. */
+.ec-mortgage-link{display:block;position:relative;box-sizing:border-box;max-width:100%;min-width:0;padding-left:29px;font-size:12px;line-height:1.55;color:var(--ink);cursor:pointer;overflow-wrap:anywhere}
+.ec-mortgage-link input[type=checkbox]{position:absolute;top:3px;left:0;display:block;box-sizing:border-box;width:18px;min-width:18px;max-width:18px;height:18px;margin:0;padding:0;accent-color:var(--accent)}
+.ec-mortgage-link small{display:block;margin-top:3px;color:var(--ink2);font-size:11px;overflow-wrap:anywhere}
 .ec-mortgage-impact .ec-mortgage-disclaimer{font-size:11px;border-top:1px solid var(--line);padding-top:11px}
 .ec-mortgage-impact button:focus-visible,.ec-mortgage-impact input:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
 @media(max-width:650px){.ec-mortgage-choices,.ec-mortgage-results{grid-template-columns:1fr}.ec-mortgage-inputs{grid-template-columns:1fr}.ec-mortgage-results>div{padding:12px}.ec-mortgage-impact{gap:11px}}
