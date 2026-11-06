@@ -1,0 +1,10 @@
+/* Optional, approved RealtyNinja iframe mount; not visible while unconfigured. */
+.ecidx-panel{margin:16px 0 24px;padding:20px;overflow:hidden}
+.ecidx-heading{display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:14px;margin-bottom:18px}
+.ecidx-heading h2{font-size:clamp(20px,2.3vw,27px);margin:5px 0 8px;color:var(--ink)}
+.ecidx-heading p,.ecidx-footnote{font-size:12px;line-height:1.6;color:var(--ink2);margin:0;max-width:680px}
+.ecidx-heading a{font-size:12px;font-weight:700;color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+.ecidx-kicker{font-size:10px;letter-spacing:.11em;color:var(--accent);font-weight:800}
+.ecidx-frame{display:block;width:100%;height:min(82vh,960px);min-height:570px;border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink)}
+.ecidx-footnote{margin-top:13px}
+@media(max-width:660px){.ecidx-panel{padding:13px}.ecidx-frame{min-height:650px;height:78vh}.ecidx-heading{gap:10px}}
