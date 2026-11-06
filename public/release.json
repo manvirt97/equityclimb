@@ -1,5 +1,5 @@
 {
-  "version": "16.13.0",
-  "released": "2026-11-03",
-  "changes": "Add free iPhone and Android installation guide and Settings installation help without changing existing financial data or calculations."
+  "version": "16.13.1",
+  "released": "2026-11-06",
+  "changes": "Fix iPhone mortgage opt-in checkbox overflowing the viewport. No changes to mortgage rates, calculations, saved data, sign-in, or permissions."
 }
